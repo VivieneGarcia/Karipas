@@ -52,11 +52,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   map.on("load", function () { // for showing routes. pede tanggalin
     const polylineInfo = [
-      {url: "http://localhost/Karipas%20Cult/RoutesPoly/alangilan.json",color: "#ff0000",},
-      {url: "http://localhost/Karipas%20Cult/RoutesPoly/balagtas.json",color: "#00ff00",},
-      {url: "http://localhost/Karipas%20Cult/RoutesPoly/bauanbat.json",color: "#0000FF",},
-      {url: "http://localhost/Karipas%20Cult/RoutesPoly/libjo.geojson",color: "#0000FF",},
-      {url: "http://localhost/Karipas%20Cult/RoutesPoly/capitolio.json",color: "#0000FF",},
+      {url: "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/alangilan.json",color: "#ff0000",},
+      {url: "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/balagtas.json",color: "#00ff00",},
+      {url: "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/bauanbat.json",color: "#0000FF",},
+      {url: "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/libjo.geojson",color: "#0000FF",},
+      {url: "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/capitolio.json",color: "#0000FF",},
     ];
 
     polylineInfo.forEach((info) => {
@@ -254,11 +254,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   async function findClosestPointOnRoutes(coordinates) { // find the closest point on each route. Returns an array of sorted closest points 
     const polylineURLs = [
-      "http://localhost/Karipas%20Cult/RoutesPoly/alangilan.json", 
-      "http://localhost/Karipas%20Cult/RoutesPoly/balagtas.json",
-      "http://localhost/Karipas%20Cult/RoutesPoly/bauanbat.json",
-      "http://localhost/Karipas%20Cult/RoutesPoly/libjo.json",
-      "http://localhost/Karipas%20Cult/RoutesPoly/capitolio.json",
+      "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/alangilan.json", 
+      "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/balagtas.json",
+      "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/bauanbat.json",
+      "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/libjo.json",
+      "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/capitolio.json",
     ];
 
     try {
@@ -604,7 +604,7 @@ function calculateDistance(coord1, coord2) {
 
   async function getStopPoints() {
     try {
-      const response = await fetch("http://localhost/Karipas%20Cult/RoutesPoly/StopPoints.json");
+      const response = await fetch("http://localhost/Karipas/Karipas%20Cult/RoutesPoly/StopPoints.json");
       const data = await response.json();
       return data.features.map(feature => feature.geometry.coordinates);
     } catch (error) {
