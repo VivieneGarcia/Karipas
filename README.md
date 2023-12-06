@@ -42,15 +42,6 @@ This program aims to assist users in finding Jeepney routes between specified or
    ```
    http://localhost/Karipas/Karipas%20Cult/index.php
    ```
-## Usage 
-1. Set the origin and destination points on the map by clicking on the desired locations.
-
-2. Explore the suggested Jeepney routes, including walking lines for the initial and final parts of the journey.
-
-3. View common routes, stop points, and visual representations on the map.
-
-4. Obtain distance and fare estimations for the Jeepney routes.
-
 
 ## Built With
 
