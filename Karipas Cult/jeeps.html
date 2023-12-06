@@ -60,7 +60,7 @@
             map.addControl(new mapboxgl.NavigationControl(), 'bottom-right'); // for zooming navigation
 
             // Array to store loaded routes
-            const routes = ['alangilan', 'balagtas', 'capitolio', 'bauanbat'];
+            const routes = ['alangilan', 'balagtas', 'capitolio', 'bauan', 'libjo'];
 
             // Object to store loaded route layers
             const routeLayers = {};
@@ -77,7 +77,7 @@
                 }
 
                 // Load and add the selected polyline
-                fetch(`http://localhost/Karipas%20Cult/RoutesPoly/${routeName}.geojson`)
+                fetch(`http://localhost/Karipas/Karipas%20Cult/RoutesPoly/${routeName}.geojson`)
                     .then(response => response.json())
                     .then(data => {
                         map.addSource('custom-polyline', {
@@ -118,7 +118,7 @@
 
                 // Load and add all polylines
                 routes.forEach(routeName => {
-                    fetch(`http://localhost/Karipas%20Cult/RoutesPoly/${routeName}.json`)
+                    fetch(`http://localhost/Karipas/Karipas%20Cult/RoutesPoly/${routeName}.geojson`)
                         .then(response => response.json())
                         .then(data => {
                             map.addSource(`custom-polyline-${routeName}`, {

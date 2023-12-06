@@ -52,13 +52,6 @@ if (isset($_POST['logout'])) {
     <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" type="text/css">
     <link rel="stylesheet" href="style.css" />
 
-    <!-- Include Turf.js from a CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js"></script>
-
-
-    <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
-
-
     <script type="module" src="try.js"></script>
     
 
@@ -74,13 +67,14 @@ if (isset($_POST['logout'])) {
     </ul>
   </nav> 
 <body>
+
     <section class="layout">
         <div class="sidebar"> 
-            <h1>Karipas!</h1>
+            <h2>Karipas!</h2>
             <div id="loggedInOrNot1">
                 <?php
                 if ($loggedInUser) {
-                    echo "Logged in as: $loggedInUser";
+                    echo "<p>Logged in as: $loggedInUser</p>";
                     echo '<form method="post"><button type="submit" id="logoutButton" name="logout">Logout</button></form>';
                     echo '<button type="submit" id="history" name="history">CheckHistory</button>';
                 } else {
@@ -88,6 +82,7 @@ if (isset($_POST['logout'])) {
                 }
                 ?>
             </div>
+            
             <button id="setStart">Pin Origin</button> 
             <button id="setEnd">Pin Destination</button>
             <button id="final">Search Jeep</button>
@@ -97,14 +92,19 @@ if (isset($_POST['logout'])) {
                 <p id="successText"></p>
             </div>
             <div id="popupstart"><p></p></div>
+
             <div id="popAddress-start">
                 <p>Origin Address: <span id="addressText-start"></span></p>
             </div>
             <div id="popAddress-end">
                 <p>Destination Address: <span id="addressText-end"></span></p>
             </div>  
+
             <p>Closest Route: <span id="closestRoute"></span></p>
-            <p>Direction: <span id="direction"></span></p>
+            <p style="display: none;">Direction:</p>
+            <p style="display: none;">Route: <span id="route"></span></p>
+            <p style="display: none;">Distance: <span id="distance"></span></p>
+            <p style="display: none;">Total Time: <span id="time"></span></p>
 
 
             <form id="saveGeocodeForm" action="savegeocode.php" method="post">
