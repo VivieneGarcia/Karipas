@@ -1,19 +1,39 @@
 document.addEventListener("DOMContentLoaded", function () {
   mapboxgl.accessToken =
     "pk.eyJ1IjoiY3p5bm9uam9obiIsImEiOiJjbG9xZWVzcnIwaDBpMmttenpza2I1ajZqIn0.SXmiSmtjjBMSmMA_rmVwiw";
-    //first commit github yeye
 
-  const walkingThresholdinMeters = 400; // willing ka ba maglakad ng 1km para makatry ng ibang route?
+  const walkingThresholdinMeters = 1000; // willing ka ba maglakad ng 1km para makatry ng ibang route?
   const numberOfClosestRoutes = 2; // ilang route na within sa walking threshold ang gusto mo tingnan
   const walkingLineIds = [];
   const commonRouteIds = [];
- 
+  
+  const mapBounds = new mapboxgl.LngLatBounds([
+    [120.919581,13.670207], // Southwest corner
+    [121.201734,13.900609] // Northeast corner
+  ]);
+
+  const geocoder2 = new MapboxGeocoder({
+    accessToken: mapboxgl.accessToken,
+    types: 'country,region,place,postcode,locality,neighborhood'
+  });
+     
+  geocoder2.addTo('#geocoder2');
+
+  const geocoder3 = new MapboxGeocoder({
+      accessToken: mapboxgl.accessToken,
+      types: 'country,region,place,postcode,locality,neighborhood'
+  });
+       
+  geocoder3.addTo('#geocoder3');
+
   const map = new mapboxgl.Map({ // default for showning map
     container: "map",
-    style: "mapbox://styles/mapbox/light-v10",
+    style: "mapbox://styles/mapbox/streets-v12",
     center: [121.05235981732966, 13.773815015863619],
-    zoom: 14,
+    zoom: 13,
+    maxBounds: mapBounds,
   });
+
   const geocoder = new MapboxGeocoder({ // for search bar sa gilid. extra thingz
     accessToken: mapboxgl.accessToken,
     mapboxgl: mapboxgl,
@@ -52,11 +72,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   map.on("load", function () { // for showing routes. pede tanggalin
     const polylineInfo = [
-      {url: "http://localhost/Karipas%20Cult/RoutesPoly/alangilan.json",color: "#ff0000",},
-      {url: "http://localhost/Karipas%20Cult/RoutesPoly/balagtas.json",color: "#00ff00",},
-      {url: "http://localhost/Karipas%20Cult/RoutesPoly/bauanbat.json",color: "#0000FF",},
-      {url: "http://localhost/Karipas%20Cult/RoutesPoly/libjo.geojson",color: "#0000FF",},
-      {url: "http://localhost/Karipas%20Cult/RoutesPoly/capitolio.json",color: "#0000FF",},
+      {url: "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/alangilan.json",color: "#ff0000",},
+      {url: "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/balagtas.json",color: "#00ff00",},
+      {url: "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/bauanbat.json",color: "#0000FF",},
+      {url: "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/libjo.geojson",color: "#0000FF",},
     ];
 
     polylineInfo.forEach((info) => {
@@ -89,6 +108,40 @@ document.addEventListener("DOMContentLoaded", function () {
     settingEnd = mode === "end";
   }
 
+  function handleMarkerSetting(e, type) {
+    const marker = type === "start" ? startMarker : endMarker;
+    const markerImage = type === "start"
+  ? "http://localhost/Karipas/Karipas%20Cult/images/mapbox-marker-icon-20px-green.png"
+  : "http://localhost/Karipas/Karipas%20Cult/images/mapbox-marker-icon-20px-red.png";
+
+
+    if (marker) {
+        marker.remove();
+    }
+
+    const lngLat = e.lngLat;
+
+    const newMarker = new mapboxgl.Marker({
+        element: createCustomMarker(markerImage),
+    }).setLngLat(lngLat).addTo(map);
+
+    if (type === "start") {
+        startMarker = newMarker;
+    } else {
+        endMarker = newMarker;
+    }
+
+    showAddress(lngLat, type);
+  }
+
+  function createCustomMarker(markerImage) {
+      const markerElement = document.createElement('img');
+      markerElement.src = markerImage;
+      markerElement.style.width = '26px';
+      markerElement.style.height = '62.4px';
+      return markerElement;
+  }
+  
   document.getElementById("setStart").addEventListener("click", function () { // pag clinick mo yung origin button
     setMode("start");
     document.getElementById("popupstart").style.display = "block";
@@ -106,8 +159,6 @@ document.addEventListener("DOMContentLoaded", function () {
       map.removeLayer(layerId);
       map.removeSource(sourceId);
     });
-  
-    // Clear the array
     walkingLineIds.length = 0;
   }
 
@@ -116,8 +167,6 @@ document.addEventListener("DOMContentLoaded", function () {
       map.removeLayer(layerId);
       map.removeSource(sourceId);
     });
-  
-    // Clear the array
     commonRouteIds.length = 0;
   }
 
@@ -153,6 +202,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const startGeocode = startMarker.getLngLat(); // for DBMS ...
       const endGeocode = endMarker.getLngLat();
+
       var geocodes = {
         start: {
           lat: startGeocode.lat,
@@ -179,25 +229,6 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error("Error during final click:", error);
     }
   });
-
-  function handleMarkerSetting(e, type) { // create pin/marker sa map
-    const marker = type === "start" ? startMarker : endMarker;
-
-    if (marker) {
-      marker.remove();
-    }
-
-    const lngLat = e.lngLat;
-    const newMarker = new mapboxgl.Marker().setLngLat(lngLat).addTo(map);
-
-    if (type === "start") {
-      startMarker = newMarker;
-    } else {
-      endMarker = newMarker;
-    }
-    
-    showAddress(lngLat, type);
-  }
 
   async function showAddress(lngLat, type) { // show address of pins 
     try {
@@ -254,12 +285,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
   async function findClosestPointOnRoutes(coordinates) { // find the closest point on each route. Returns an array of sorted closest points 
     const polylineURLs = [
-      "http://localhost/Karipas%20Cult/RoutesPoly/alangilan.json", 
-      "http://localhost/Karipas%20Cult/RoutesPoly/balagtas.json",
-      "http://localhost/Karipas%20Cult/RoutesPoly/bauanbat.json",
-      "http://localhost/Karipas%20Cult/RoutesPoly/libjo.json",
-      "http://localhost/Karipas%20Cult/RoutesPoly/capitolio.json",
+      "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/alangilan.json", 
+      "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/balagtas.json",
+      "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/bauanbat.json",
+      "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/libjo.json",
     ];
+
+    console.log("STOP POINT:", coordinates)
 
     try {
       const responses = await Promise.all(polylineURLs.map((url) => fetch(url)));
@@ -268,7 +300,6 @@ document.addEventListener("DOMContentLoaded", function () {
       let closestPointsArray = [];
   
       polylineDataArray.forEach((data, index) => {
-
         const firstFeature = data.features[0];
   
         const polylineCoordinates = firstFeature.geometry.coordinates;
@@ -431,18 +462,48 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (commonRoutes2.length > 0) {
       console.log(`Origin and destination share common routes: ${commonRoutes2.join(", ")}`);
-      // Draw walking lines for common routes
+
       for (const commonRoute of commonRoutes2) {
-        await drawJeepCommonRoute(commonRoute,originClosestPoints,destinationClosestPoints);
+        const originPoint = originClosestPoints.find(point => point.route === commonRoute);
+        const destinationPoint = destinationClosestPoints.find(point => point.route === commonRoute);
+        await drawJeepCommonRoute(commonRoute, originPoint, destinationPoint);
       }
     } else {
-      console.log("Origin and destination do not have common routes. You have to go to STOP POINTS");
-      await findAlternativeRoute(originClosestPoints, destinationClosestPoints);
 
+      console.log("Origin and destination do not have common routes. You have to go to STOP POINTS");
+      const stopPoints = await getStopPoints();
+      console.log(stopPoints)
+      if (stopPoints.length === 0) {
+        console.error("No stop points found.");
+        return;
+    }
+    for (const stopPointArray of stopPoints) {
+      console.log(stopPointArray)
+        const stopPoint = {
+            lat: stopPointArray[1],
+            lng: stopPointArray[0],
+        };
+
+        const closestRoutePoints = await findClosestPointOnRoutes(stopPoint);
+        console.log("STOPPOINT:", closestRoutePoints)
+
+        console.log(stopPoint)
+      }
+    
+
+      for (const stopPoint of closestRoutePoints) {
+        const originPoint = originClosestPoints.find(point => point.route === stopPoint);
+        const destinationPoint = destinationClosestPoints.find(point => point.route === stopPoint);
+        const sameStopPointOrigin = stopPoint.find(point => point.route == originClosestPoints)
+        const sameStopPointDestination = stopPoint.find(point => point.route == destinationClosestPoints)
+        await drawJeepCommonRoute(stopPoint, originPoint, sameStopPointOrigin );
+        await drawJeepCommonRoute(stopPoint, destinationPoint, sameStopPointDestination);
+
+      }
     }
   }
 
-  async function drawJeepCommonRoute(route, originClosestPoints, destinationClosestPoints) {
+  async function drawJeepCommonRoute(route, originClosestPoint, destinationClosestPoint) {
     try {
       let commonRoutes = "";
       const response = await fetch(route);
@@ -461,21 +522,20 @@ document.addEventListener("DOMContentLoaded", function () {
       }
   
       const polylineCoordinates = firstFeature.geometry.coordinates;
-      for (let i = 0; i < originClosestPoints.length; i++) {
-        const originPoint = originClosestPoints[i];
-        const destinationPoint = destinationClosestPoints[i];
-  
-        const indexOrigin = findClosestPointIndex(polylineCoordinates, originPoint);
-        const indexDestination = findClosestPointIndex(polylineCoordinates, destinationPoint);
-  
-        if (indexOrigin === null || indexDestination === null) {
-          console.error(`Error finding closest points on ${route} for origin or destination.`);
-          return;
-        }
-  
+
+      console.log("FINDING OPTIMAL ROUTE")
+      const overlappingPoints = getOverlappingPointsOfCompressedCircle(polylineCoordinates);
+
+      const {indexOrigin, indexDestination} = findOptimalOriginAndDestinationPoints (polylineCoordinates, originClosestPoint, destinationClosestPoint, overlappingPoints)
+      console.log ("THIS IS THE INDEXES", indexOrigin,indexDestination)
+
+
+      if (indexOrigin === null || indexDestination === null) {
+        console.error(`Error finding closest points on ${route} for origin or destination.`);
+        return;
+      }
         const subsetCoordinates = calculateSubsetCoordinates(polylineCoordinates, indexOrigin, indexDestination);
   
-        // Check if subsetCoordinates is not empty before attempting to draw the line
         if (subsetCoordinates.length > 0) {
           const sourceId2 = "used-route-source-" + Date.now();
           const layerId2 = "used-route-layer-" + Date.now();
@@ -504,8 +564,8 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             paint: {
               "line-color": getRandomColor(),
-              "line-width": 6,
-              "line-opacity": 1,
+              "line-width": getRandomWidth(),
+              "line-opacity": getRandomOpacity(),
             },
           });
   
@@ -514,74 +574,167 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
           console.error(`Subset coordinates are empty for ${route}. Skipping drawing for this pair.`);
         }
-      }
   
       document.getElementById(`closestRoute`).textContent = commonRoutes.slice(0, -2);
     } catch (error) {
       console.error(`Error drawing line connecting closest points for common route ${route}:`, error);
     }
   }
-  function calculateSubsetCoordinates(polylineCoordinates, indexOrigin, indexDestination, isOneWay) {
-    const subsetCoordinates = [];
+
+  function getRandomWidth() {
+    return Math.floor(Math.random() * (12 - 5 + 1)) + 4;
+  }
+
+  function getRandomOpacity() {
+    const randomValue = Math.random();
+    const adjustedValue = 0.5 + 0.4 * randomValue;
+    return Math.min(adjustedValue, 1);
+  }
+
+  function findOptimalOriginAndDestinationPoints(route, originClosestPoint, destinationClosestPoint, overlappingPoints) {
+    const originDontOverlap = !checkOverlappingPoints(originClosestPoint, overlappingPoints);
+    const destinationDontOverlap = !checkOverlappingPoints(destinationClosestPoint, overlappingPoints);
+    const originIndex = findPointIndex(route, originClosestPoint);
+    const destinationIndex = findPointIndex(route, destinationClosestPoint);
+    const alternativeDestination = findAlternativeIndex(destinationClosestPoint, overlappingPoints, route);
+    const alternativeOrigin = findAlternativeIndex(originClosestPoint, overlappingPoints, route);
   
-    if (isOneWay) {
-      // Only consider traversal if the road segment is one-way
-      if (indexDestination < indexOrigin) {
-        console.error("Error: Incorrect order for one-way street");
-        return subsetCoordinates; // or handle the error in an appropriate way
+    if (originDontOverlap && destinationDontOverlap) {
+        console.log("They don't overlap.");
+        return { indexOrigin: originIndex, indexDestination: destinationIndex };
+
+    } else if (originDontOverlap && !destinationDontOverlap) {
+        console.log("Destination overlaps, finding alternative...");
+        
+        const findClosesRouteA = calculateSubsetCoordinates(route, originIndex,  destinationIndex)
+        const findClosestRouteB = calculateSubsetCoordinates(route, originIndex, alternativeDestination)
+
+        if (findClosesRouteA.length > findClosestRouteB.length){
+          return {indexOrigin: originIndex, indexDestination: alternativeDestination}
+        } else {
+          return {indexOrigin: originIndex, indexDestination:  destinationIndex}
+        }
+
+    } else if (!originDontOverlap && destinationDontOverlap) {
+      console.log("Origin overlaps, finding alternative...");
+      
+      const findClosesRouteA = calculateSubsetCoordinates(route, originIndex,  destinationIndex)
+      const findClosestRouteB = calculateSubsetCoordinates(route, alternativeOrigin, destinationIndex)
+
+        if (findClosesRouteA.length > findClosestRouteB.length){
+          return { indexOrigin:  alternativeOrigin , indexDestination: destinationIndex};
+        } else {
+          return {indexOrigin: originIndex, indexDestination:  destinationIndex}
+        }
+
+  } else {
+      console.log("Both origin and destination overlap with points on the route.");
+  
+      const findClosestRouteA = calculateSubsetCoordinates(route, originIndex, destinationIndex);
+      const findClosestRouteB = calculateSubsetCoordinates(route, alternativeOrigin, destinationIndex);
+      const findClosestRouteC = calculateSubsetCoordinates(route, originIndex, alternativeDestination);
+      const findClosestRouteD = calculateSubsetCoordinates(route, alternativeOrigin, alternativeDestination);
+  
+      const lengths = {
+          routeA: findClosestRouteA.length,
+          routeB: findClosestRouteB.length,
+          routeC: findClosestRouteC.length,
+          routeD: findClosestRouteD.length
+      };
+  
+      const shortestRouteLength = Math.min(...Object.values(lengths));
+      const shortestRoute = Object.keys(lengths).find(key => lengths[key] === shortestRouteLength);
+  
+      if (shortestRoute === 'routeA') {
+          return { indexOrigin: originIndex, indexDestination: destinationIndex };
+      } else if (shortestRoute === 'routeB') {
+          return { indexOrigin: alternativeOrigin, indexDestination: destinationIndex };
+      } else if (shortestRoute === 'routeC') {
+          return { indexOrigin: originIndex, indexDestination: alternativeDestination };
+      } else {
+          return { indexOrigin: alternativeOrigin, indexDestination: alternativeDestination };
       }
     }
+  }
+
+  function findPointIndex(route, point) {
+    for (let i = 0; i < route.length; i++) {
+        const routePoint = route[i];
+        if (routePoint[0] === point.lng || routePoint[1] === point.lat) {
+            return i; // Return the index if the point is found
+        }
+    }
+    return -1; // Return -1 if the point is not found
+  }
+
+  function checkOverlappingPoints(point, overlappingPoints) {
+      for (const overlappingPointObj of overlappingPoints) {
+          const overlappingPoint = overlappingPointObj.coordinate;
+          if (point.lng === overlappingPoint[0] && point.lat === overlappingPoint[1]) {
+              return true; // It overlaps
+          }
+      }
+      return false; // It doesn't
+  }
+
+  function findAlternativeIndex(point, overlappingPoints, route) {
+    for (const overlappingPointObj of overlappingPoints) {
+        const overlappingPoint = overlappingPointObj.coordinate;
+        if (point.lng === overlappingPoint[0] && point.lat === overlappingPoint[1]) {
+            console.log("Matching point found.");
+            console.log("similarCoordinateIndex:", overlappingPointObj.similarCoordinateIndex);
+            return overlappingPointObj.similarCoordinateIndex;
+        }
+    }
+    console.log("No matching point found.");
+    return -1;
+  }
+
+  function getOverlappingPointsOfCompressedCircle(route) {
+    const overlappingPoints = [];
   
-    subsetCoordinates.push(...polylineCoordinates.slice(indexOrigin, indexDestination + 1));
+    for (let i = 0; i < route.length; i++) {
+      const currentCoordinate = route[i];
+      for (let j = i + 1; j < route.length; j++) {
+        const otherCoordinate = route[j];
   
+        if (currentCoordinate[0] === otherCoordinate[0] && currentCoordinate[1] === otherCoordinate[1]) {
+          overlappingPoints.push({
+            coordinate: currentCoordinate,
+            index: i,
+            similarCoordinateIndex: j,
+          });
+        }
+      }
+    }
+    return overlappingPoints;
+  }
+
+  function calculateSubsetCoordinates(polylineCoordinates, indexOrigin, indexDestination) {
+    const subsetCoordinates = [];
+    const maxSubsetLength = Infinity;
+
+    // Validate indices
+    if (indexOrigin < 0 || indexDestination < 0 || indexOrigin >= polylineCoordinates.length || indexDestination >= polylineCoordinates.length) {
+        console.error("Error: Invalid indices");
+        return subsetCoordinates;
+    }
+
+    if (indexDestination >= indexOrigin) {
+        subsetCoordinates.push(...polylineCoordinates.slice(indexOrigin, indexDestination + 1));
+    } else {
+        // Circular route handling
+        subsetCoordinates.push(...polylineCoordinates.slice(indexOrigin), ...polylineCoordinates.slice(0, indexDestination + 1));
+    }
+
+    // Check if the subset is too long and there is more than one route
+    if (subsetCoordinates.length > maxSubsetLength && polylineCoordinates.length > 2) {
+        console.error("Error: Subset is too long");
+        return [];
+    }
+
     return subsetCoordinates;
   }
-  
-  function findClosestPointIndex(polylineCoordinates, point) {
-  let closestIndex = null;
-  let closestDistance = Number.MAX_VALUE;
-  let visitedIndices = new Set();
-
-  for (let i = 0; i < polylineCoordinates.length; i++) {
-    const currentPoint = polylineCoordinates[i];
-    const distance = calculateDistance(currentPoint, point);
-
-    if (distance < closestDistance && !visitedIndices.has(i)) {
-      closestIndex = i;
-      closestDistance = distance;
-      visitedIndices.add(i);
-    }
-  }
-  return closestIndex;
-}
-
-function calculateDistance(coord1, coord2) {
-  const lat1 = Array.isArray(coord1) ? coord1[1] : coord1.lat;
-  const lng1 = Array.isArray(coord1) ? coord1[0] : coord1.lng;
-  const lat2 = Array.isArray(coord2) ? coord2[1] : coord2.lat;
-  const lng2 = Array.isArray(coord2) ? coord2[0] : coord2.lng;
-
-  if (lat1 === undefined || lng1 === undefined || lat2 === undefined || lng2 === undefined) {
-    console.error("Invalid coordinates:", coord1, coord2);
-    return;
-  }
-
-  const R = 6371; // Earth's radius in km
-  const dLat = toRadians(lat2 - lat1);
-  const dLng = toRadians(lng2 - lng1);
-
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRadians(lat1)) *
-      Math.cos(toRadians(lat2)) *
-      Math.sin(dLng / 2) *
-      Math.sin(dLng / 2);
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  const distance = R * c;
-  return distance;
-}
 
   function findExactCommonRoutes(route1, route2) { //
     const arrayify = (value) => (Array.isArray(value) ? value : [value]);
@@ -595,16 +748,26 @@ function calculateDistance(coord1, coord2) {
   }
 
   function getRandomColor() {
-    const colorsForRoutesRandom = ['#9a1115','#e1ad01','#1975b5']
+    const colorsForRoutesRandom = [
+      '#9a1115', // Crimson
+      '#1975b5', // Royal Blue
+      '#009999', // Teal
+      '#c2c2f0', // Lavender
+      '#006600', // Emerald
+      '#c299f0', // Violet
+      '#009933', // Jade
+      '#e15d44', // Tomato
+      '#993333', // Indian Red
+    ];
     const randomIndex = Math.floor(Math.random() * colorsForRoutesRandom.length);
     const randomColor = colorsForRoutesRandom[randomIndex];
 
     return randomColor;
-    }
+  }
 
   async function getStopPoints() {
     try {
-      const response = await fetch("http://localhost/Karipas%20Cult/RoutesPoly/StopPoints.json");
+      const response = await fetch("http://localhost/Karipas/Karipas%20Cult/RoutesPoly/StopPoints.json");
       const data = await response.json();
       return data.features.map(feature => feature.geometry.coordinates);
     } catch (error) {
@@ -612,73 +775,5 @@ function calculateDistance(coord1, coord2) {
       return [];
     }
   }
-
-  async function findAlternativeRoute(originClosestPoints, destinationClosestPoints) {
-    try {
-        const stopPoints = await getStopPoints();
-        if (stopPoints.length === 0) {
-            console.error("No stop points found.");
-            return;
-        }
-
-        for (const stopPointArray of stopPoints) {
-            const stopPoint = {
-                lat: stopPointArray[1],
-                lng: stopPointArray[0],
-            };
-
-            const connectionRoutes = await findConnectionPointsAtStop(stopPoint, originClosestPoints, destinationClosestPoints);
-
-            if (connectionRoutes.length > 0) {
-                console.log(`We have a connection at stop point:`, stopPoint);
-                await drawAlternativeRoutes(originClosestPoints, destinationClosestPoints, stopPoint, connectionRoutes);
-            }
-        }
-    } catch (error) {
-        console.error("Error during findAlternativeRoute:", error);
-    }
-}
-
-async function findConnectionPointsAtStop(stopPoint, originClosestPoints, destinationClosestPoints) {
-    try {
-        const closestRoutePoints = await findClosestPointOnRoutes(stopPoint);
-
-        if (!closestRoutePoints || closestRoutePoints.length === 0) {
-            console.error("No closest route points found for the stop point.");
-            return [];
-        }
-
-        const stopRoutes = closestRoutePoints.map((point) => point.route);
-
-        // Find the common route at the stop point that matches the destination's closest route
-        const connectionRoutes = originClosestPoints.filter((originRoute) =>
-            destinationClosestPoints.some((destinationRoute) => stopRoutes.includes(originRoute.route))
-        );
-
-        return connectionRoutes;
-    } catch (error) {
-        console.error("Error finding connection points at stop:", error);
-        return [];
-    }
-}
-
-async function drawAlternativeRoutes(originClosestPoints, destinationClosestPoints, stopPoint, connectionRoutes) {
-    try {
-        // Draw jeepney lines from origin to the stop point
-        await drawJeepCommonRoute(originClosestPoints[0].route, originClosestPoints, [stopPoint]);
-
-        for (const connectionRoute of connectionRoutes) {
-          await drawJeepCommonRoute(connectionRoute.route, [stopPoint], destinationClosestPoints);
-      }
-        // Draw walking lines from the stop point to the destination
-        const stopPointLatLng = { lat: stopPoint.lat, lng: stopPoint.lng };
-        await drawWalkingLines(stopPointLatLng, destinationClosestPoints, "stop");
-
-        // Draw jeepney lines from the stop point to the destination with dynamic connections
-        
-    } catch (error) {
-        console.error("Error drawing alternative routes:", error);
-    }
-}
 
 });
