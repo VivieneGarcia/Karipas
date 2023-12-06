@@ -1,10 +1,8 @@
 
-KARIPAS: 
----
-## + About the Project
+# KARIPAS: Batangas City Jeepney Transportation System
 This program aims to assist users in finding Jeepney routes between specified origin and destination points within Batangas City.
 
-## + Usage 
+## Features 
 1. Set the origin and destination points on the map by clicking on the desired locations.
 
 2. Explore the suggested Jeepney routes, including walking lines for the initial and final parts of the journey.
@@ -13,11 +11,11 @@ This program aims to assist users in finding Jeepney routes between specified or
 
 4. Obtain distance and fare estimations for the Jeepney routes.
 
-## +SDG
+## SDG
 1. kaboom
 
 
-### + Prerequisites
+### Prerequisites
 
 - [XAMPP](https://www.apachefriends.org/index.html) installed on your machine.
 
@@ -54,17 +52,17 @@ This program aims to assist users in finding Jeepney routes between specified or
 4. Obtain distance and fare estimations for the Jeepney routes.
 
 
-## + Built With
+## Built With
 
 * [Mapbox](https://www.mapbox.com/)) - Mapping Features
 * [OpenStreetMap](https://www.openstreetmap.org/) - Jeepney Routes
 * [Xampp](http://www.facweb.iitkgp.ac.in/dashboard/) - Database and Server
 
 
-## + Authors
+## Authors
 
 * **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
 
 ## Acknowledgments
 
-* Hat tip to anyone whose code was used
+* kaboom
