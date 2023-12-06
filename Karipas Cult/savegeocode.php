@@ -28,14 +28,11 @@ if (isset($_SESSION['userID'])) {
                 mysqli_stmt_execute($stmt);
 
                 if (mysqli_stmt_affected_rows($stmt) > 0) {
-                    var_dump($_POST);
-                    echo "<script>showSuccessMessage('Geocodes saved successfully');</script>";
                     echo "GEOCODES SUCCESSFULLY STORED";
                     
                 } else {
                     echo "Error saving geocodes";
                 }
-
                 mysqli_stmt_close($stmt);
             } else {
                 echo "Error preparing SQL statement: " . mysqli_error($conn);

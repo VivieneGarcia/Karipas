@@ -2,8 +2,9 @@ document.addEventListener("DOMContentLoaded", function () {
   mapboxgl.accessToken =
     "pk.eyJ1IjoiY3p5bm9uam9obiIsImEiOiJjbG9xZWVzcnIwaDBpMmttenpza2I1ajZqIn0.SXmiSmtjjBMSmMA_rmVwiw";
 
-  const walkingThresholdinMeters = 1000; // willing ka ba maglakad ng 1km para makatry ng ibang route?
-  const numberOfClosestRoutes = 2; // ilang route na within sa walking threshold ang gusto mo tingnan
+  const walkingThresholdinMeters = 500; // willing ka ba maglakad ng 1km para makatry ng ibang route?
+  const numberOfClosestRoutes = 3; // ilang route na within sa walking threshold ang gusto mo tingnan
+  const howManyRoutes = 5;
   const walkingLineIds = [];
   const commonRouteIds = [];
   
@@ -269,15 +270,13 @@ document.addEventListener("DOMContentLoaded", function () {
     return degrees * (Math.PI / 180);
   }
 
-  async function findClosestPointOnRoutes(coordinates) { // find the closest point on each route. Returns an array of sorted closest points 
+  async function findClosestPointOnRoutes(coordinates,data) { // find the closest point on each route. Returns an array of sorted closest points 
     const polylineURLs = [
       "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/alangilan.json", 
       "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/balagtas.json",
       "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/bauanbat.json",
       "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/libjo.json",
     ];
-
-    console.log("STOP POINT:", coordinates)
 
     try {
       const responses = await Promise.all(polylineURLs.map((url) => fetch(url)));
@@ -307,7 +306,7 @@ document.addEventListener("DOMContentLoaded", function () {
   
       closestPointsArray.sort((a, b) => a.distance - b.distance); // sort points from nearest to farthest 
       
-      const top3ClosestPoints = closestPointsArray.slice(0, numberOfClosestRoutes ); 
+      const top3ClosestPoints = closestPointsArray.slice(0, data ); 
 
       return top3ClosestPoints;
     } catch (error) {
@@ -423,72 +422,98 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  async function compareAndDrawtheLines(origin, destination) { 
-    
-    const originClosestPoints = await findClosestPointOnRoutes(origin); // gets the closest points of origin 
-    const destinationClosestPoints = await findClosestPointOnRoutes(destination);
-
-    if (!originClosestPoints || !destinationClosestPoints) {
-      console.error("Error finding closest points.");
-      return;
-    }
-
-    for (const startClosestPoint of originClosestPoints) { // draw walking lines for each closest point
-      await drawWalkingLines(origin, startClosestPoint, "start");
-    }
-
-    for (const endClosestPoint of destinationClosestPoints) {
-      await drawWalkingLines(destination, endClosestPoint, "end");
-    }
-
-    const originRoutes = originClosestPoints.map((point) => point.route); // extract the routes
-    const destinationRoutes = destinationClosestPoints.map((point) => point.route); // extract the routes
-
-    const commonRoutes2 = findExactCommonRoutes(originRoutes,destinationRoutes);
-
-    if (commonRoutes2.length > 0) {
-      console.log(`Origin and destination share common routes: ${commonRoutes2.join(", ")}`);
-
-      for (const commonRoute of commonRoutes2) {
-        const originPoint = originClosestPoints.find(point => point.route === commonRoute);
-        const destinationPoint = destinationClosestPoints.find(point => point.route === commonRoute);
-        await drawJeepCommonRoute(commonRoute, originPoint, destinationPoint);
-      }
-    } else {
-
-      console.log("Origin and destination do not have common routes. You have to go to STOP POINTS");
-      const stopPoints = await getStopPoints();
-      console.log(stopPoints)
-      if (stopPoints.length === 0) {
-        console.error("No stop points found.");
+  async function compareAndDrawtheLines(origin, destination) {
+    try {
+      const originClosestPoints = await findClosestPointOnRoutes(origin, numberOfClosestRoutes );
+      const destinationClosestPoints = await findClosestPointOnRoutes(destination,numberOfClosestRoutes);
+  
+      if (!originClosestPoints || !destinationClosestPoints) {
+        console.error("Error finding closest points.");
         return;
-    }
-    for (const stopPointArray of stopPoints) {
-      console.log(stopPointArray)
-        const stopPoint = {
+      }
+  
+      for (const startClosestPoint of originClosestPoints) {
+        await drawWalkingLines(origin, startClosestPoint, "start");
+      }
+  
+      for (const endClosestPoint of destinationClosestPoints) {
+        await drawWalkingLines(destination, endClosestPoint, "end");
+      }
+  
+      const originRoutes = originClosestPoints.map((point) => point.route);
+      const destinationRoutes = destinationClosestPoints.map((point) => point.route);
+      const commonRoutes1= findExactCommonRoutes(originRoutes, destinationRoutes);
+  
+      if (commonRoutes1.length > 0) {
+        console.log(`Origin and destination share common routes: ${commonRoutes1.join(", ")}`);
+  
+        for (const commonRoute of commonRoutes1) {
+          const originPoint = originClosestPoints.find((point) => point.route === commonRoute);
+          const destinationPoint = destinationClosestPoints.find((point) => point.route === commonRoute);
+          await drawJeepCommonRoute(commonRoute, originPoint, destinationPoint);
+        }
+      } else {
+
+        console.log("Origin and destination do not have common routes. Checking stop points...");
+  
+        const stopPoints = await getStopPoints();
+  
+        if (stopPoints.length === 0) {
+          console.error("No stop points found.");
+          return;
+        }
+  
+        for (const stopPointArray of stopPoints) {
+          const stopPoint = {
             lat: stopPointArray[1],
             lng: stopPointArray[0],
-        };
+          };
+        
+          console.log("STOP POINT:", stopPoint);
+        
+          const closestRoutePoints = await findClosestPointOnRoutes(stopPoint, howManyRoutes);
+          console.log("CLOSEST ROUTE OF STOP POINTS:", closestRoutePoints);
+        
+          const stopPointRoutes = closestRoutePoints.map((point) => point.route);
+          const commonRoutes2 = findExactCommonRoutes(originRoutes,stopPointRoutes);
+          const commonRoutes3 = findExactCommonRoutes(destinationRoutes,stopPointRoutes);
 
-        const closestRoutePoints = await findClosestPointOnRoutes(stopPoint);
-        console.log("STOPPOINT:", closestRoutePoints)
+          console.log("Common Routes:", commonRoutes2, "3", commonRoutes3);
+          
+          if (commonRoutes2.length > 0) {
+            console.log(`Stop point has common routes: ${commonRoutes2.join(", ")}`);
+        
+            for (const stopRoute of commonRoutes2) {
+              const originPoint = originClosestPoints.find((point) => point.route === stopRoute);
+              const StopPoint1 = closestRoutePoints.find((point) => point.route === stopRoute);
+              console.log("this is everything: ",stopRoute, originPoint, StopPoint1)
+              await drawJeepCommonRoute(stopRoute, originPoint, StopPoint1 );
+            }
+          } else {
+            console.log("Stop point does not have common routes.");
+          }
 
-        console.log(stopPoint)
+          
+
+          if (commonRoutes3.length > 0) {
+          for (const stopRoute of commonRoutes3) {
+            const destinationPoint = destinationClosestPoints.find((point) => point.route === stopRoute);
+            const StopPoint2 = closestRoutePoints.find((point) => point.route === stopRoute);
+            console.log("this is everything: ",stopRoute, destinationPoint, StopPoint2)
+            await drawJeepCommonRoute(stopRoute, StopPoint2, destinationPoint );
+          }
+        } else {
+          console.log("Stop point does not have common routes.");
+          }
+
+        }
+        
       }
-    
-
-      for (const stopPoint of closestRoutePoints) {
-        const originPoint = originClosestPoints.find(point => point.route === stopPoint);
-        const destinationPoint = destinationClosestPoints.find(point => point.route === stopPoint);
-        const sameStopPointOrigin = stopPoint.find(point => point.route == originClosestPoints)
-        const sameStopPointDestination = stopPoint.find(point => point.route == destinationClosestPoints)
-        await drawJeepCommonRoute(stopPoint, originPoint, sameStopPointOrigin );
-        await drawJeepCommonRoute(stopPoint, destinationPoint, sameStopPointDestination);
-
-      }
+    } catch (error) {
+      console.error("Error during final click:", error);
     }
   }
-
+  
   async function drawJeepCommonRoute(route, originClosestPoint, destinationClosestPoint) {
     try {
       let commonRoutes = "";
@@ -567,24 +592,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  function getRandomWidth() {
-    return Math.floor(Math.random() * (12 - 5 + 1)) + 4;
-  }
-
-  function getRandomOpacity() {
-    const randomValue = Math.random();
-    const adjustedValue = 0.5 + 0.4 * randomValue;
-    return Math.min(adjustedValue, 1);
-  }
-
   function findOptimalOriginAndDestinationPoints(route, originClosestPoint, destinationClosestPoint, overlappingPoints) {
+    console.log("STOP POINT AND POINT", originClosestPoint,destinationClosestPoint)
     const originDontOverlap = !checkOverlappingPoints(originClosestPoint, overlappingPoints);
     const destinationDontOverlap = !checkOverlappingPoints(destinationClosestPoint, overlappingPoints);
+    
     const originIndex = findPointIndex(route, originClosestPoint);
     const destinationIndex = findPointIndex(route, destinationClosestPoint);
     const alternativeDestination = findAlternativeIndex(destinationClosestPoint, overlappingPoints, route);
     const alternativeOrigin = findAlternativeIndex(originClosestPoint, overlappingPoints, route);
-  
+    
     if (originDontOverlap && destinationDontOverlap) {
         console.log("They don't overlap.");
         return { indexOrigin: originIndex, indexDestination: destinationIndex };
@@ -654,6 +671,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function checkOverlappingPoints(point, overlappingPoints) {
+    console.log("Point:", point);
       for (const overlappingPointObj of overlappingPoints) {
           const overlappingPoint = overlappingPointObj.coordinate;
           if (point.lng === overlappingPoint[0] && point.lat === overlappingPoint[1]) {
@@ -737,11 +755,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const colorsForRoutesRandom = [
       '#9a1115', // Crimson
       '#1975b5', // Royal Blue
-      '#009999', // Teal
-      '#c2c2f0', // Lavender
       '#006600', // Emerald
       '#c299f0', // Violet
-      '#009933', // Jade
       '#e15d44', // Tomato
       '#993333', // Indian Red
     ];
@@ -749,6 +764,16 @@ document.addEventListener("DOMContentLoaded", function () {
     const randomColor = colorsForRoutesRandom[randomIndex];
 
     return randomColor;
+  }
+
+  function getRandomWidth() {
+    return Math.floor(Math.random() * (12 - 5 + 1)) + 4;
+  }
+
+  function getRandomOpacity() {
+    const randomValue = Math.random();
+    const adjustedValue = 0.5 + 0.4 * randomValue;
+    return Math.min(adjustedValue, 1);
   }
 
   async function getStopPoints() {
