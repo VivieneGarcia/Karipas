@@ -12,20 +12,6 @@ document.addEventListener("DOMContentLoaded", function () {
     [121.201734,13.900609] // Northeast corner
   ]);
 
-  const geocoder2 = new MapboxGeocoder({
-    accessToken: mapboxgl.accessToken,
-    types: 'country,region,place,postcode,locality,neighborhood'
-  });
-     
-  geocoder2.addTo('#geocoder2');
-
-  const geocoder3 = new MapboxGeocoder({
-      accessToken: mapboxgl.accessToken,
-      types: 'country,region,place,postcode,locality,neighborhood'
-  });
-       
-  geocoder3.addTo('#geocoder3');
-
   const map = new mapboxgl.Map({ // default for showning map
     container: "map",
     style: "mapbox://styles/mapbox/streets-v12",
