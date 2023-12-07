@@ -94,7 +94,6 @@ document.addEventListener("DOMContentLoaded", function () {
     settingEnd = mode === "end";
   }
   
-
   function handleMarkerSetting(e, type) {
     const marker = type === "start" ? startMarker : endMarker;
     const markerImage = type === "start"
@@ -382,7 +381,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   async function drawWalkingLines(startCoordinates, endCoordinates, marker) { // walking lines from pin to closest points on routes
     try {
-
       const { walkingLines, distances } = await fetchWalkingLines(startCoordinates,endCoordinates);
         
       walkingLines.forEach((line, index) => {
@@ -519,6 +517,7 @@ document.addEventListener("DOMContentLoaded", function () {
   
   async function drawJeepCommonRoute(route, originClosestPoint, destinationClosestPoint) {
     try {
+
         document.getElementById("resultsContainer").style.display = "block";
 
         const response = await fetch(route);
@@ -539,9 +538,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         const polylineCoordinates = firstFeature.geometry.coordinates;
-
-        console.log("FINDING OPTIMAL ROUTE");
-
         const overlappingPoints = getOverlappingPointsOfCompressedCircle(polylineCoordinates);
 
         const { indexOrigin, indexDestination } = findOptimalOriginAndDestinationPoints(polylineCoordinates, originClosestPoint, destinationClosestPoint, overlappingPoints);
@@ -552,14 +548,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         const subsetCoordinates = calculateSubsetCoordinates(polylineCoordinates, indexOrigin, indexDestination);
-        console.log(subsetCoordinates.length)
 
         const segments = splitRouteCoordinates(subsetCoordinates);
         let overallDistance = 0;
         let overallDuration = 0;
 
         for (const segment of segments) {
-            console.log("segment:" ,segment)
             const response = await fetchMatchingAPI(segment);
 
             if (!response || !response.matchings ||response.matchings.length === 0) {
@@ -594,7 +588,6 @@ document.addEventListener("DOMContentLoaded", function () {
                   },
               });
   
-              // Find the color based on the route URL in polylineInfo array
               const routeInfo = polylineInfo.find(info => info.url === route);
               const routeColor = routeInfo.color;
               const routeWidth = routeInfo.width;
@@ -616,46 +609,47 @@ document.addEventListener("DOMContentLoaded", function () {
           } else {
               console.error(`Subset coordinates are empty for ${route}. Skipping drawing for this pair.`);
           }
-
         }
 
         document.getElementById('jeepsAvailable').style.display = "block";
         document.getElementById('reminder').style.display = "block";
-        const overallDistanceInKm = overallDistance / 1000;
-        let fare = calculateJeepFare(overallDistanceInKm);
-        const overalDistanceRounded = Math.round(overallDistanceInKm);
-
-        const resultContainer = document.getElementById("resultsContainer");
-
-        const resultElement = document.createElement("div");
-        resultElement.classList.add("result");
-
-        const pinElement = document.createElement("img");
-        pinElement.src = routeInfo ? routeInfo.pin : "";
-
-        const routeInfoElement = document.createElement("x");
-        routeInfoElement.textContent = `${routeInfo ? routeInfo.name : 'Unknown'}`;
-
-        const distanceInfoElement = document.createElement("r");
-        distanceInfoElement.textContent = `Distance:${overalDistanceRounded}km`;
-
-        const durationInfoElement = document.createElement("z");
-        durationInfoElement.textContent = ` Duration: ${Math.round(Number(overallDuration) / 60)}min`;
-
-        const fareInfoElement = document.createElement("f");
-        fareInfoElement.textContent = `Fare: PHP ${fare.toFixed(2)}`;
-
-        resultElement.appendChild(pinElement);
-        resultElement.appendChild(routeInfoElement);
-        resultElement.appendChild(distanceInfoElement);
-        resultElement.appendChild(durationInfoElement);
-        resultElement.appendChild(fareInfoElement);
-        resultContainer.appendChild(resultElement);
-
+        displayResults(routeInfo, subsetCoordinates, overallDistance, overallDuration)
     } catch (error) {
         console.error(`Error drawing line connecting closest points for common route ${route}:`, error);
     }
   } 
+
+  function displayResults(routeInfo, subsetCoordinates, overallDistance, overallDuration) {
+    const overalDistanceRounded = Math.round(overallDistance / 1000);
+    const fare = calculateJeepFare(overallDistance / 1000);
+  
+    const resultContainer = document.getElementById("resultsContainer");
+  
+    const resultElement = document.createElement("div");
+    resultElement.classList.add("result");
+  
+    const pinElement = document.createElement("img");
+    pinElement.src = routeInfo ? routeInfo.pin : "";
+  
+    const routeInfoElement = document.createElement("x");
+    routeInfoElement.textContent = `${routeInfo ? routeInfo.name : 'Unknown'}`;
+  
+    const distanceInfoElement = document.createElement("r");
+    distanceInfoElement.textContent = `Distance:${overalDistanceRounded}km`;
+  
+    const durationInfoElement = document.createElement("z");
+    durationInfoElement.textContent = `| Duration: ${Math.round(Number(overallDuration) / 60)}min`;
+  
+    const fareInfoElement = document.createElement("f");
+    fareInfoElement.textContent = `Fare: PHP ${fare.toFixed(2)}`;
+  
+    resultElement.appendChild(pinElement);
+    resultElement.appendChild(routeInfoElement);
+    resultElement.appendChild(distanceInfoElement);
+    resultElement.appendChild(durationInfoElement);
+    resultElement.appendChild(fareInfoElement);
+    resultContainer.appendChild(resultElement);
+  }
 
   function calculateJeepFare(distanceInKm) {
     const baseFare = 13; // Initial fare

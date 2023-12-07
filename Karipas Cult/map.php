@@ -33,8 +33,10 @@ if (isset($_POST['logout'])) {
     logout();
 }
 
-
-
+if (isset($_POST['history'])) {
+    include 'history.php';
+    exit(); // Stop further execution to prevent including history.php multiple times
+}
 
 ?>
 <!DOCTYPE html>
@@ -71,19 +73,17 @@ if (isset($_POST['logout'])) {
     <section class="layout">
         <div class="sidebar">
         <k>KARIPAS</k>
-                <?php
-                if ($loggedInUser) {
-                    echo "<p>Logged in as: $loggedInUser</p>";
-                    echo '<form method="post" id = "loggedInOrNot1">
-                    <button type="submit" id="logoutButton" name="logout" style=margin: 0 auto; display: block;">Logout</button>
-                    <form method="post" action=""><button type="submit" id="history" name="history" style="margin: 0 auto; display: block;">Check History</button></form>
-                  </form>';
-
-                  include 'history.php';
-                } else {
-                    echo "<p>YOU ARE NOT LOGGED IN.</p>";
-                }
-                ?>
+        <?php
+if ($loggedInUser) {
+    echo "<p>Logged in as: $loggedInUser</p>";
+    echo '<form method="post" id="loggedInOrNot1">
+            <button type="submit" id="logoutButton" name="logout" style="margin: 0 auto; display: block;">Logout</button>
+            <button type="button" id="history" style="margin: 0 auto; display: block;" onclick="redirectToHistory()">Check History</button>
+        </form>';
+} else {
+    echo "<p>YOU ARE NOT LOGGED IN.</p>";
+}
+?>
              <button id="setStart">Pin Origin</button>
             <button id="setEnd">Pin Destination</button>
             <button id="final">Search Jeep</button>
@@ -136,6 +136,10 @@ function showSuccessMessage(message) {
     document.getElementById('successText').textContent = message;
     document.getElementById('successMessage').style.display = 'block';
 }
+
+function redirectToHistory() {
+        window.location.href = 'history.php';
+    }
 
 </script>
 </html>
