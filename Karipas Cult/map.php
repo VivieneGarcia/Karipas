@@ -60,7 +60,7 @@ if (isset($_POST['logout'])) {
 <nav id='menu'>
     <input type='checkbox' id='responsive-menu' onclick='updatemenu()'><label></label>
     <ul>
-      <li><a href='home.html'>Home</a></li>
+      <li><a href='home.html'>KARIPAS</a></li>
       <li><a href='register.php'>Login</a></li> 
       <li><a href='map.php'>Map</a></li>
       <li><A href='jeeps.html'>Jeeps</a><li> <!-- FOR EXRTA LANG TO-->
@@ -69,25 +69,22 @@ if (isset($_POST['logout'])) {
 <body>
 
     <section class="layout">
-        <div class="sidebar"> 
-            <h2>Karipas!</h2>
-            <div id="loggedInOrNot1">
+        <div class="sidebar">
+        <k>KARIPAS</k>
                 <?php
                 if ($loggedInUser) {
                     echo "<p>Logged in as: $loggedInUser</p>";
-                    echo '<form method="post"><button type="submit" id="logoutButton" name="logout">Logout</button></form>';
-                    echo '<button type="submit" id="history" name="history">CheckHistory</button>';
+                    echo '<div id="loggedInOrNot1"><form method="post"><button type="submit" id="logoutButton" name="logout">Logout</button></form>
+                    <button type="submit" id="history" name="history">CheckHistory</button> </div>';
                 } else {
-                    echo "Not logged in";
+                    echo "<p>YOU ARE NOT LOGGED IN.</p>";
+
                 }
                 ?>
-            </div>
-            
-            <button id="setStart">Pin Origin</button> 
+             <button id="setStart">Pin Origin</button>
             <button id="setEnd">Pin Destination</button>
             <button id="final">Search Jeep</button>
-            <button id="refresh" onclick = "refresh()">Refresh</button> 
-            
+            <button id="refresh" onclick="refresh()">Restart</button>
             <div id="successMessage" style="display: none;">
                 <p id="successText"></p>
             </div>
@@ -99,14 +96,9 @@ if (isset($_POST['logout'])) {
             <div id="popAddress-end">
                 <p>Destination Address: <span id="addressText-end"></span></p>
             </div>  
-
-            <p>Closest Route: <span id="closestRoute"></span></p>
-            <p style="display: none;">Direction:</p>
-            <p style="display: none;">Route: <span id="route"></span></p>
-            <p style="display: none;">Distance: <span id="distance"></span></p>
-            <p style="display: none;">Total Time: <span id="time"></span></p>
-
-
+            
+            <div style="display: none;" class="box-container" id="resultsContainer"></div>
+    
             <form id="saveGeocodeForm" action="savegeocode.php" method="post">
                 <input type="hidden" id="startLatitude" name="startLatitude" value="">
                 <input type="hidden" id="startLongitude" name="startLongitude" value="">
@@ -115,7 +107,6 @@ if (isset($_POST['logout'])) {
                 <?php
                 if ($loggedInUser) {
                     echo ' <button type="submit" name="submit" id="saveGeocodesButton" style="display: none;">Save Pins</button>';
-                    
                 } else {
                     echo " ";
                 }
@@ -124,7 +115,7 @@ if (isset($_POST['logout'])) {
         </div>
         <div class="body">
             <div id="map"></div>
-        </div>
+            </div>
     </section>
 </body>
 

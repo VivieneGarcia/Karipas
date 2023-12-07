@@ -107,7 +107,8 @@ body {
   font-family: "Trebuchet MS", Helvetica, sans-serif;
   background-color: #107896;
   text-align: center;
-	font-size:13px  ;
+	font-size: 15px;
+	font-weight: 200;
   color:#ffffff;
   animation: mapAnim 0.5s ease 0s 1 normal forwards;
 }
@@ -186,10 +187,9 @@ body {
 
 #loggedInOrNot1 {
 	display: flex;
-	align-items:center;
 	color: #ffffff; /* Adjust the color as needed */
 	font-size: 14px; /* Adjust the font size as needed */
-	font-weight:400;
+
 }
 
 #logoutButton,#history {
@@ -203,7 +203,7 @@ body {
 	cursor: pointer;
 	font-weight: bolder;
 	height: 30px;
-	width: 120px;
+	width: 150px;
 }
 
 #logoutButton:hover,
@@ -228,14 +228,45 @@ body {
   gap: 10px;
 }
 
+.box-container {
+	border: 2px solid #094867; /* Set the border properties */
+	padding: 10px;
+	margin: 10px 0; 
+	border-radius: 5px;
+	background-color: #175f84;
+}
+x{ /*jeep*/
+  font-weight: bold;
+	font-style: italic;
+  color: #ffffff;
+	font-size: x-large
+}
+k{
+	font-weight: bold;
+	font-style: italic;
+  color: #ffffff;
+	font-size: x-large
+}
+
+r {
+  font-style: italic;
+  color: #0070df;
+}
+
+z {
+  text-decoration: underline;
+  color: #ffc107;
+}
+
 
 .sidebar {
   grid-area: sidebar;
   display: flex;
   flex-direction: column;
   margin-left: 19px;
-	max-width: 55vh;
-	width: 500px;
+	max-width: 40vh;
+	width: 450px;
+	overflow-x: auto;
 	
 }
 

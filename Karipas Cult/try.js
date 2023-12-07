@@ -10,8 +10,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const markers = []; 
   
   const mapBounds = new mapboxgl.LngLatBounds([
-    [121.001388,13.732748], // Southwest corner
-    [121.087276,13.805108] // Northeast corner
+    [120.821471,13.583923], // Southwest corner
+    [121.217243,13.905142] // Northeast corner
   ]);
 
   const map = new mapboxgl.Map({ // default for showning map
@@ -22,12 +22,6 @@ document.addEventListener("DOMContentLoaded", function () {
     maxBounds: mapBounds,
   });
 
-  const geocoder = new MapboxGeocoder({ // for search bar sa gilid. extra thingz
-    accessToken: mapboxgl.accessToken,
-    mapboxgl: mapboxgl,
-  });
-
-  map.addControl(geocoder, "top-left"); // search bar
   map.addControl(new mapboxgl.NavigationControl(), "bottom-right"); // button for zooming
 
   var startMarker, endMarker;
@@ -165,6 +159,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.getElementById("final").addEventListener("click", async function () { // for doing everything
     try {
+      const resultContainer = document.getElementById("resultsContainer");
+      resultContainer.innerHTML = "";
+
+
      markers.forEach(marker => marker.remove());
       markers.length = 0;
       clearEveryLayer();
@@ -470,7 +468,6 @@ document.addEventListener("DOMContentLoaded", function () {
           console.log("STOP POINT:", stopPoint);
         
           const closestRoutePoints = await findClosestPointOnRoutes(stopPoint, howManyRoutes);
-          console.log("CLOSEST ROUTE OF STOP POINTS:", closestRoutePoints);
         
           const stopPointRoutes = closestRoutePoints.map((point) => point.route);
           const commonRoutes2 = findExactCommonRoutes(originRoutes,stopPointRoutes);
@@ -506,9 +503,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
           console.log("Stop point does not have common routes.");
           }
-
         }
-        
       }
     } catch (error) {
       console.error("Error during final click:", error);
@@ -517,10 +512,12 @@ document.addEventListener("DOMContentLoaded", function () {
   
   async function drawJeepCommonRoute(route, originClosestPoint, destinationClosestPoint) {
     try {
+        document.getElementById("resultsContainer").style.display = "block";
 
-        let commonRoutes = "";
         const response = await fetch(route);
         const data = await response.json();
+        const routeInfo = polylineInfo.find(info => info.url === route);
+
 
         if (!data || !data.features || data.features.length === 0) {
             console.error(`Invalid polyline data for ${route}:`, data);
@@ -569,13 +566,10 @@ document.addEventListener("DOMContentLoaded", function () {
             const coordinates = matching.geometry.coordinates;
 
             overallDistance += distanceOfSegment;
-            overallDuration += durationOfSegment;
-
-            console.log("Distance of segment:", distanceOfSegment, "meters");
-            const durationInMinutes = Number(durationOfSegment) / 60;
-            console.log("Duration of segment:", durationInMinutes, "minutes");   
+            overallDuration += durationOfSegment; 
 
             if (coordinates.length > 0) {
+
               const sourceId2 = "used-route-source-" + Date.now();
               const layerId2 = "used-route-layer-" + Date.now();
   
@@ -588,7 +582,7 @@ document.addEventListener("DOMContentLoaded", function () {
                       properties: {},
                       geometry: {
                           type: "LineString",
-                          coordinates: coordinates,
+                          coordinates: subsetCoordinates,
                       },
                   },
               });
@@ -614,15 +608,35 @@ document.addEventListener("DOMContentLoaded", function () {
               });
   
               console.log("THERE SHOULD BE A DRAWING OF JEEP");
-              commonRoutes += `${route}, `;
+
+
           } else {
               console.error(`Subset coordinates are empty for ${route}. Skipping drawing for this pair.`);
           }
 
         }
-        console.log("Overall distance:", Math.round(overallDistance), "meters");
-        console.log("Overall duration:", Math.round(Number(overallDuration) / 60), "minutes");
-        document.getElementById(`closestRoute`).textContent = commonRoutes.slice(0, -2);
+        const overalDistanceRounded = Math.round(overallDistance);
+
+        const resultContainer = document.getElementById("resultsContainer");
+
+        const resultElement = document.createElement("div");
+        resultElement.classList.add("result");
+
+          const routeInfoElement = document.createElement("x");
+          routeInfoElement.textContent = `${routeInfo ? routeInfo.name : 'Unknown'}`;
+
+
+          const distanceInfoElement = document.createElement("r");
+          distanceInfoElement.textContent = `Total Distance: ${overalDistanceRounded} meters`;
+
+          const durationInfoElement = document.createElement("z");
+          durationInfoElement.textContent = `Total Duration: ${Math.round(Number(overallDuration) / 60)} minutes`;
+
+        resultElement.appendChild(routeInfoElement);
+        resultElement.appendChild(distanceInfoElement);
+        resultElement.appendChild(durationInfoElement);
+
+        resultContainer.appendChild(resultElement);
     } catch (error) {
         console.error(`Error drawing line connecting closest points for common route ${route}:`, error);
     }
