@@ -34,6 +34,8 @@ if (isset($_POST['logout'])) {
 }
 
 
+
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -51,9 +53,7 @@ if (isset($_POST['logout'])) {
     <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
     <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" type="text/css">
     <link rel="stylesheet" href="style.css" />
-
     <script type="module" src="try.js"></script>
-    
 
 </head>
 
@@ -74,30 +74,31 @@ if (isset($_POST['logout'])) {
                 <?php
                 if ($loggedInUser) {
                     echo "<p>Logged in as: $loggedInUser</p>";
-                    echo '<div id="loggedInOrNot1"><form method="post"><button type="submit" id="logoutButton" name="logout">Logout</button></form>
-                    <button type="submit" id="history" name="history">CheckHistory</button> </div>';
+                    echo '<form method="post" id = "loggedInOrNot1">
+                    <button type="submit" id="logoutButton" name="logout" style=margin: 0 auto; display: block;">Logout</button>
+                    <form method="post" action=""><button type="submit" id="history" name="history" style="margin: 0 auto; display: block;">Check History</button></form>
+                  </form>';
+
+                  include 'history.php';
                 } else {
                     echo "<p>YOU ARE NOT LOGGED IN.</p>";
-
                 }
                 ?>
              <button id="setStart">Pin Origin</button>
             <button id="setEnd">Pin Destination</button>
             <button id="final">Search Jeep</button>
             <button id="refresh" onclick="refresh()">Restart</button>
-            <div id="successMessage" style="display: none;">
-                <p id="successText"></p>
-            </div>
+
+            <div id="messages" style="display: none;"><p id="message"></p></div>
             <div id="popupstart"><p></p></div>
 
-            <div id="popAddress-start">
-                <p>Origin Address: <span id="addressText-start"></span></p>
-            </div>
-            <div id="popAddress-end">
-                <p>Destination Address: <span id="addressText-end"></span></p>
-            </div>  
-            
+            <div id="popAddress-start"><p>Origin Address: <span id="addressText-start"></span></p></div>
+            <div id="popAddress-end"><p>Destination Address: <span id="addressText-end"></span></p></div>  
+
+            <k id='jeepsAvailable' style="display: none;">JEEPS AVAILABLE: </k>
+            <boom id='reminder' style="display: none;">Use the color guide for reference.</boom>
             <div style="display: none;" class="box-container" id="resultsContainer"></div>
+            
     
             <form id="saveGeocodeForm" action="savegeocode.php" method="post">
                 <input type="hidden" id="startLatitude" name="startLatitude" value="">

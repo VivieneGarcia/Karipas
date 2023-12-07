@@ -107,20 +107,15 @@ body {
   font-family: "Trebuchet MS", Helvetica, sans-serif;
   background-color: #107896;
   text-align: center;
-	font-size: 15px;
+	font-size: 14px;
 	font-weight: 200;
   color:#ffffff;
   animation: mapAnim 0.5s ease 0s 1 normal forwards;
 }
 
-.h1 {
-	font-size:20px;
-	font-weight: bolder;
-}
-
 #map {
-  height: 100%; /* Use 100% height within the container */
-  width: 100%; /* Use 100% width within the container */
+  height: 100%;
+  width: 100%; 
   border: 2px double #44437f;
   margin-left: 20px;
   margin-top: 5px;
@@ -138,7 +133,6 @@ body {
 	margin-top: 2px;
 }
 
-
 #setStart:hover {
   opacity: 0.65;
 }
@@ -150,7 +144,7 @@ body {
 	background:   #175f84;
 	color: white;
   cursor: pointer;
-  font-weight: bolder;
+  font-weight: bold;
 }
 
 #setEnd:hover {
@@ -164,13 +158,22 @@ body {
 	background:  #175f84;
 	color: white;
   cursor: pointer;
-
-  font-weight: bolder;
+  font-weight: bold;
 }
+
 #final:hover {
   opacity: 0.65;
 }
+#resultsContainer {
+  display: grid;
+  grid-template-columns: 2fr 2fr;
+  gap: 10px; /* Add space between elements */
+}
 
+.box-container {
+  display: flex;
+
+}
 #refresh {
   background-color: #AAABB8;
   border-radius: 4px;
@@ -178,8 +181,7 @@ body {
 	background:  #0C374D;
 	color: white;
   cursor: pointer;
- 
-  font-weight: bolder;
+  font-weight: bold;
 }
 #refresh:hover {
   opacity: 0.65;
@@ -191,24 +193,36 @@ body {
 	font-size: 14px; /* Adjust the font size as needed */
 
 }
-
-#logoutButton,#history {
-	margin-left: 15px; /* Adjust the margin as needed to separate buttons */
-	background-color:  #AAABB8;
-	background:   #175f84;
-	color: white; /* Adjust the text color as needed */
-	border: none;
-	border-radius: 4px;
-	padding: 6px 20px;
-	cursor: pointer;
-	font-weight: bolder;
-	height: 30px;
-	width: 150px;
+#loggedInOrNot1 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  grid-auto-flow: column; /* Controls button placement */
+	align-items: center;
 }
 
-#logoutButton:hover,
-#history:hover {
-	opacity: 0.65;
+#saveGeocodesButton{
+	margin-top: 5px;
+	background-color: #AAABB8;
+  border-radius: 4px;
+  padding: 6px 60px;
+	background:  #175f84;
+	color: white;
+  cursor: pointer;
+  font-weight: bolder;
+}
+
+#logoutButton, #history {
+  text-align: center;
+  margin-bottom: 5px;
+	background-color:  #AAABB8;
+  border-radius: 4px;
+  padding: 6px 20px;
+	background:  #175f84;
+	color: white;
+  font-weight: bolder;
+	display: flex;
+	cursor: pointer;
 }
 
 #popupstart{
@@ -216,6 +230,7 @@ body {
 	font-weight:bolder;
 	font-size:large;
 }
+
 .layout {
   margin-top: 0px;
   width: 1500px;
@@ -234,30 +249,46 @@ body {
 	margin: 10px 0; 
 	border-radius: 5px;
 	background-color: #175f84;
+	display:flex;
 }
+
 x{ /*jeep*/
   font-weight: bold;
 	font-style: italic;
   color: #ffffff;
-	font-size: x-large
+	font-size: x-large;
 }
-k{
+
+k{ 
 	font-weight: bold;
 	font-style: italic;
   color: #ffffff;
-	font-size: x-large
+	font-size: x-large;
+	margin-top: 10px;
 }
 
-r {
-  font-style: italic;
-  color: #0070df;
+r { /*distance*/
+  color: #e1e5e9;
+	margin:10px;
+	font-size: medium;
 }
 
-z {
-  text-decoration: underline;
-  color: #ffc107;
+z { /*distance*/
+	margin-right:15px;
+  color: rgb(224, 238, 239);
+}
+f{
+
+  color: rgb(108, 219, 227);
 }
 
+#span{
+	margin: 0;
+}
+
+img{
+	margin-right: 4px;
+}
 
 .sidebar {
   grid-area: sidebar;

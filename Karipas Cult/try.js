@@ -22,6 +22,12 @@ document.addEventListener("DOMContentLoaded", function () {
     maxBounds: mapBounds,
   });
 
+  const geocoder = new MapboxGeocoder({
+    accessToken: mapboxgl.accessToken,
+    mapboxgl: mapboxgl,
+  });
+  
+  map.addControl(geocoder, 'top-left');
   map.addControl(new mapboxgl.NavigationControl(), "bottom-right"); // button for zooming
 
   var startMarker, endMarker;
@@ -29,10 +35,10 @@ document.addEventListener("DOMContentLoaded", function () {
   var settingEnd = false;
 
   const polylineInfo = [
-    {url: "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/alangilan.json",color: "#ff0000", width: 7, name: "Alangilan"},
-    {url: "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/balagtas.json",color: "#00ff00",width: 4, name: "Balagtas"},
-    {url: "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/bauanbat.json",color: "#0000FF",width: 5, name: "Bauan"},
-    {url: "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/libjo.json",color: "#5a2476",width: 5, name: "Libjo"},
+    {url: "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/alangilan.json",color: "#ff0000", width: 9, name: "Alangilan", pin:"http://localhost/Karipas/Karipas%20Cult/images/alangilanpin.png"},
+    {url: "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/balagtas.json",color: "#00ff00",width: 4, name: "Balagtas", pin:"http://localhost/Karipas/Karipas%20Cult/images/balagtas.pin.png"},
+    {url: "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/bauanbat.json",color: "#113c82",width: 5, name: "Bauan", pin: "http://localhost/Karipas/Karipas%20Cult/images/bauanpin.png"},
+    {url: "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/libjo.json",color: "#5a2476",width: 5, name: "Libjo", pin:"http://localhost/Karipas/Karipas%20Cult/images/libjopin.png"},
   ];
 
   function displayAllRoutes(polylineData, color) { // for showing routes on map. pede tanggalin
@@ -52,7 +58,7 @@ document.addEventListener("DOMContentLoaded", function () {
       paint: {
         "line-color": color,
         "line-width": 8,  
-        "line-opacity": 0.1,
+        "line-opacity": 0.18,
       },
     });
   }
@@ -87,6 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
     settingStart = mode === "start";
     settingEnd = mode === "end";
   }
+  
 
   function handleMarkerSetting(e, type) {
     const marker = type === "start" ? startMarker : endMarker;
@@ -429,8 +436,8 @@ document.addEventListener("DOMContentLoaded", function () {
       const destinationClosestPoints = await findClosestPointOnRoutes(destination,numberOfClosestRoutes);
   
       if (!originClosestPoints || !destinationClosestPoints) {
-        document.getElementById("successMessage").style.display = "inline-block";
-        document.getElementById(`successText`).textContent ="PINS ARE TOO FAR FROM AVAILABLE ROUTES ";
+        document.getElementById("messages").style.display = "inline-block";
+        document.getElementById(`message`).textContent ="PINS ARE TOO FAR FROM AVAILABLE ROUTES ";
         return;
       }
   
@@ -603,44 +610,66 @@ document.addEventListener("DOMContentLoaded", function () {
                   paint: {
                       "line-color": routeColor,
                       "line-width":  routeWidth,
-                      "line-opacity": 0.6,
+                      "line-opacity": 0.8,
                   },
               });
-  
-              console.log("THERE SHOULD BE A DRAWING OF JEEP");
-
-
           } else {
               console.error(`Subset coordinates are empty for ${route}. Skipping drawing for this pair.`);
           }
 
         }
-        const overalDistanceRounded = Math.round(overallDistance);
+
+        document.getElementById('jeepsAvailable').style.display = "block";
+        document.getElementById('reminder').style.display = "block";
+        const overallDistanceInKm = overallDistance / 1000;
+        let fare = calculateJeepFare(overallDistanceInKm);
+        const overalDistanceRounded = Math.round(overallDistanceInKm);
 
         const resultContainer = document.getElementById("resultsContainer");
 
         const resultElement = document.createElement("div");
         resultElement.classList.add("result");
 
-          const routeInfoElement = document.createElement("x");
-          routeInfoElement.textContent = `${routeInfo ? routeInfo.name : 'Unknown'}`;
+        const pinElement = document.createElement("img");
+        pinElement.src = routeInfo ? routeInfo.pin : "";
 
+        const routeInfoElement = document.createElement("x");
+        routeInfoElement.textContent = `${routeInfo ? routeInfo.name : 'Unknown'}`;
 
-          const distanceInfoElement = document.createElement("r");
-          distanceInfoElement.textContent = `Total Distance: ${overalDistanceRounded} meters`;
+        const distanceInfoElement = document.createElement("r");
+        distanceInfoElement.textContent = `Distance:${overalDistanceRounded}km`;
 
-          const durationInfoElement = document.createElement("z");
-          durationInfoElement.textContent = `Total Duration: ${Math.round(Number(overallDuration) / 60)} minutes`;
+        const durationInfoElement = document.createElement("z");
+        durationInfoElement.textContent = ` Duration: ${Math.round(Number(overallDuration) / 60)}min`;
 
+        const fareInfoElement = document.createElement("f");
+        fareInfoElement.textContent = `Fare: PHP ${fare.toFixed(2)}`;
+
+        resultElement.appendChild(pinElement);
         resultElement.appendChild(routeInfoElement);
         resultElement.appendChild(distanceInfoElement);
         resultElement.appendChild(durationInfoElement);
-
+        resultElement.appendChild(fareInfoElement);
         resultContainer.appendChild(resultElement);
+
     } catch (error) {
         console.error(`Error drawing line connecting closest points for common route ${route}:`, error);
     }
   } 
+
+  function calculateJeepFare(distanceInKm) {
+    const baseFare = 13; // Initial fare
+    const initialDistance = 4; // Initial distance for base fare
+    const perKm = 1     ; // Fare per kilometer
+
+
+    const calculatedFare = baseFare + (distanceInKm - initialDistance) * perKm;
+    if(calculatedFare < baseFare){
+      return baseFare;
+    } else{
+      return Math.round(calculatedFare * 4.0) / 4.0; // Round to the nearest 0.25 PHP
+    }
+}
 
   function splitRouteCoordinates(route) {
     const segments = [];
@@ -832,6 +861,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     return [...uniqueCommonRoutes];
   }
+
   async function getStopPoints() {
     try {
       const response = await fetch("http://localhost/Karipas/Karipas%20Cult/RoutesPoly/StopPoints.json");

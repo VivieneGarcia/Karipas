@@ -28,22 +28,27 @@ if (isset($_SESSION['userID'])) {
                 mysqli_stmt_execute($stmt);
 
                 if (mysqli_stmt_affected_rows($stmt) > 0) {
-                    echo "GEOCODES SUCCESSFULLY STORED";
-                    
+                    // Use JavaScript to display a pop-up alert and redirect to map.php
+                    echo "<script>alert('GEOCODES SUCCESSFULLY STORED'); window.location.href = 'map.php';</script>";
                 } else {
-                    echo "Error saving geocodes";
+                    // Use JavaScript to display a pop-up alert and redirect to map.php
+                    echo "<script>alert('Error saving geocodes'); window.location.href = 'map.php';</script>";
                 }
                 mysqli_stmt_close($stmt);
             } else {
-                echo "Error preparing SQL statement: " . mysqli_error($conn);
+                // Use JavaScript to display a pop-up alert and redirect to map.php
+                echo "<script>alert('Error preparing SQL statement: " . mysqli_error($conn) . "'); window.location.href = 'map.php';</script>";
             }
         } else {
-            echo "Invalid geocodes received";
+            // Use JavaScript to display a pop-up alert and redirect to map.php
+            echo "<script>alert('Invalid geocodes received'); window.location.href = 'map.php';</script>";
         }
     } else {
-        echo "No submit data received";
+        // Use JavaScript to display a pop-up alert and redirect to map.php
+        echo "<script>alert('No submit data received'); window.location.href = 'map.php';</script>";
     }
 } else {
-    echo "User not logged in";
+    // Use JavaScript to display a pop-up alert and redirect to map.php
+    echo "<script>alert('User not logged in'); window.location.href = 'map.php';</script>";
 }
 ?>
