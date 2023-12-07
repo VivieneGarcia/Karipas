@@ -169,7 +169,7 @@ document.addEventListener("DOMContentLoaded", function () {
       resultContainer.innerHTML = "";
 
 
-     markers.forEach(marker => marker.remove());
+      markers.forEach(marker => marker.remove());
       markers.length = 0;
       clearEveryLayer();
       document.getElementById("popupstart").style.display = "none";
@@ -211,11 +211,20 @@ document.addEventListener("DOMContentLoaded", function () {
           lng: endGeocode.lng,
         },
       };
+
+      const addressPartsOrigin = startResult.place_name.split(",");
+      const streetNameOrigin = addressPartsOrigin[0].trim();
+      console.log(streetNameOrigin)
+
+      const addressPartsDestination = endResult.place_name.split(",");
+      const streetNameDestination= addressPartsDestination[0].trim();
       // Set geocodes to hidden form fields
       document.getElementById("startLatitude").value = geocodes.start.lat; 
       document.getElementById("startLongitude").value = geocodes.start.lng;
       document.getElementById("endLatitude").value = geocodes.end.lat;
       document.getElementById("endLongitude").value = geocodes.end.lng;
+      document.getElementById("originAddress").value = streetNameOrigin
+      document.getElementById("destinationAddress").value = streetNameDestination
 
       var loggedInUser = "<?php echo $loggedInUser; ?>";
       if (loggedInUser) {
@@ -866,5 +875,58 @@ document.addEventListener("DOMContentLoaded", function () {
       return [];
     }
   }
+
+
+  const routeAgainButtons = document.querySelectorAll('.route-again-btn');
+    routeAgainButtons.forEach(button => {
+      
+        button.addEventListener('click', function () {
+            const startLat = this.dataset.startLat;
+            const startLng = this.dataset.startLng;
+            const endLat = this.dataset.endLat;
+            const endLng = this.dataset.endLng;
+            const resultContainer = document.getElementById("resultsContainer");
+            resultContainer.innerHTML = "";
+            document.getElementById("popupstart").style.display = "none";
+            markers.forEach(marker => marker.remove());
+            markers.length = 0;
+            clearEveryLayer();
+
+            // Call the JavaScript function to handle routing with these coordinates
+            routeAgain(startLat, startLng, endLat, endLng);
+        });
+    });
+
+    async function routeAgain(startLat, startLng, endLat, endLng) {
+        const startPinCoordinates = combineCoordinates(startLat, startLng);
+        const endPinCoordinates = combineCoordinates(endLat, endLng);
+
+        console.log('Combined Coordinates:', startPinCoordinates, endPinCoordinates);
+        const startResult = await getGeocodeResult(startPinCoordinates);
+        const endResult = await getGeocodeResult(endPinCoordinates);
+        console.log(startResult,endResult)
+        const startuserPin = {
+            lat: startResult.geometry.coordinates[1],
+            lng: startResult.geometry.coordinates[0],
+        };
+
+        const enduserPin = {
+            lat: endResult.geometry.coordinates[1],
+            lng: endResult.geometry.coordinates[0],
+        };
+
+        console.log("GEOCODED USER PIN:", startuserPin, enduserPin);
+        await compareAndDrawtheLines(startuserPin, enduserPin);
+        const marker2 = createMarker(startuserPin);
+        const marker3 = createMarker(enduserPin);
+        markers.push(marker2);
+        markers.push(marker3);
+
+    }
+    function combineCoordinates(lat, lng) {
+        return [parseFloat(lng), parseFloat(lat)]; // Combine latitude and longitude
+    }
+
+  
 
 });

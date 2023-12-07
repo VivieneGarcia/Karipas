@@ -305,3 +305,25 @@ img{
 	grid-area: body;
 	margin-right: 5px; 
 }
+
+
+c {
+  font-size: 14px;
+  font-weight: 100;
+  margin: 0;
+  display: flex; /* Enable flexbox layout */
+  justify-content: flex-start; /* Align content to the left */
+  text-align: left;
+	margin-top: 5px;;
+	
+}
+
+.route-again-btn{
+	font-size: 14px;
+  font-weight: 100;
+  margin: 0;
+  display: flex; /* Enable flexbox layout */
+  justify-content: flex-start; /* Align content to the left */
+  text-align: left;
+	margin-bottom: 35px;;
+}
