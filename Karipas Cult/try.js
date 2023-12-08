@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
     [121.217243,13.905142] // Northeast corner
   ]);
 
-  const map = new mapboxgl.Map({ // default for showning map
+  const map = new mapboxgl.Map({ 
     container: "map",
     style: "mapbox://styles/mapbox/streets-v12",
     center: [121.05235981732966, 13.773815015863619],
@@ -196,21 +196,7 @@ document.addEventListener("DOMContentLoaded", function () {
       };
 
       console.log("GEOCODED USER PIN:", startuserPin, enduserPin);
-      await compareAndDrawtheLines(startuserPin, enduserPin); // will check if the 2 pins have common nearest route 
-
-      const startGeocode = startMarker.getLngLat(); // for DBMS ...
-      const endGeocode = endMarker.getLngLat();
-
-      var geocodes = {
-        start: {
-          lat: startGeocode.lat,
-          lng: startGeocode.lng,
-        },
-        end: {
-          lat: endGeocode.lat,
-          lng: endGeocode.lng,
-        },
-      };
+      await compareAndDrawtheLines(startuserPin, enduserPin); 
 
       const addressPartsOrigin = startResult.place_name.split(",");
       const streetNameOrigin = addressPartsOrigin[0].trim();
@@ -218,11 +204,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const addressPartsDestination = endResult.place_name.split(",");
       const streetNameDestination= addressPartsDestination[0].trim();
+
       // Set geocodes to hidden form fields
-      document.getElementById("startLatitude").value = geocodes.start.lat; 
-      document.getElementById("startLongitude").value = geocodes.start.lng;
-      document.getElementById("endLatitude").value = geocodes.end.lat;
-      document.getElementById("endLongitude").value = geocodes.end.lng;
+      document.getElementById("startLatitude").value = startuserPin.lat; 
+      document.getElementById("startLongitude").value = startuserPin.lng;
+      document.getElementById("endLatitude").value = enduserPin.lat;
+      document.getElementById("endLongitude").value = enduserPin.lng;
       document.getElementById("originAddress").value = streetNameOrigin
       document.getElementById("destinationAddress").value = streetNameDestination
 
@@ -350,91 +337,6 @@ document.addEventListener("DOMContentLoaded", function () {
     );
 
     return closestPoint.distance === Infinity ? null : closestPoint;
-  }
-
-  const fetchWalkingLines = async (startCoordinates, endCoordinates) => {  // to get walking lines
-    try {
-      const response = await fetch(
-        `https://api.mapbox.com/directions/v5/mapbox/walking/${startCoordinates.lng},${startCoordinates.lat};${endCoordinates.lng},${endCoordinates.lat}?geometries=geojson&access_token=${mapboxgl.accessToken}`
-      );
-      if (!response.ok) {
-        throw new Error(`Error fetching walking lines: ${response.statusText}`);
-      }
-      const data = await response.json();
-
-      if (data && data.code === "Ok" && data.routes && data.routes.length > 0) {
-        const walkingLines = data.routes.map((route) => {
-          return route.geometry.coordinates;
-        });
-
-        const distances = data.routes.map((route) => {
-          return {
-            duration: route.duration / 60, // Convert seconds to minutes
-            distance: route.distance,
-          };
-        });
-
-        return { walkingLines, distances };
-      } else {
-        console.error(
-          "No routes found in the Walking Lines API response:",
-          data
-        );
-        return null;
-      }
-    } catch (error) {
-      console.error("Error fetching walking lines:", error);
-      return null;
-    }
-  };
-
-  async function drawWalkingLines(startCoordinates, endCoordinates, marker) { // walking lines from pin to closest points on routes
-    try {
-      const { walkingLines, distances } = await fetchWalkingLines(startCoordinates,endCoordinates);
-        
-      walkingLines.forEach((line, index) => {
-        const sourceId = `${marker}-walking-line-source-${index}-${Math.random()}`;
-        const layerId = `${marker}-walking-line-layer-${index}-${Math.random()}`;
-
-        walkingLineIds.push({ sourceId, layerId });
-
-        map.addSource(sourceId, {
-          type: "geojson",
-          data: {
-            type: "Feature",
-            properties: {
-              duration: distances[index].duration,
-              distance: distances[index].distance,
-            },
-            geometry: {
-              type: "LineString",
-              coordinates: line,
-            },
-          },
-        });
-
-        map.addLayer({
-          id: layerId,
-          type: "line",
-          source: sourceId,
-          layout: {
-            "line-join": "round",
-            "line-cap": "round",
-          },
-          paint: {
-            "line-color": marker === "start"? "#469904": marker === "end"? "#FF0000": "#0000FF",
-            "line-width": 5,
-            "line-dasharray": [1, 2],
-          },
-        });
-
-        console.log(`Duration for Walking ${index + 1}: ${distances[index].duration} minutes`);
-        console.log(`Distance for route ${index + 1}: ${distances[index].distance} meters`);
-    
-      });
-    } catch (error) {
-      console.error("Error drawing walking lines:", error);
-    }
   }
 
   async function compareAndDrawtheLines(origin, destination) {
@@ -628,85 +530,91 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   } 
 
-  function displayResults(routeInfo, subsetCoordinates, overallDistance, overallDuration) {
-    const overalDistanceRounded = Math.round(overallDistance / 1000);
-    const fare = calculateJeepFare(overallDistance / 1000);
-  
-    const resultContainer = document.getElementById("resultsContainer");
-  
-    const resultElement = document.createElement("div");
-    resultElement.classList.add("result");
-  
-    const pinElement = document.createElement("img");
-    pinElement.src = routeInfo ? routeInfo.pin : "";
-  
-    const routeInfoElement = document.createElement("x");
-    routeInfoElement.textContent = `${routeInfo ? routeInfo.name : 'Unknown'}`;
-  
-    const distanceInfoElement = document.createElement("r");
-    distanceInfoElement.textContent = `Distance:${overalDistanceRounded}km`;
-  
-    const durationInfoElement = document.createElement("z");
-    durationInfoElement.textContent = `| Duration: ${Math.round(Number(overallDuration) / 60)}min`;
-  
-    const fareInfoElement = document.createElement("f");
-    fareInfoElement.textContent = `Fare: PHP ${fare.toFixed(2)}`;
-  
-    resultElement.appendChild(pinElement);
-    resultElement.appendChild(routeInfoElement);
-    resultElement.appendChild(distanceInfoElement);
-    resultElement.appendChild(durationInfoElement);
-    resultElement.appendChild(fareInfoElement);
-    resultContainer.appendChild(resultElement);
-  }
-
-  function calculateJeepFare(distanceInKm) {
-    const baseFare = 13; // Initial fare
-    const initialDistance = 4; // Initial distance for base fare
-    const perKm = 1     ; // Fare per kilometer
-
-
-    const calculatedFare = baseFare + (distanceInKm - initialDistance) * perKm;
-    if(calculatedFare < baseFare){
-      return baseFare;
-    } else{
-      return Math.round(calculatedFare * 4.0) / 4.0; // Round to the nearest 0.25 PHP
-    }
-}
-
-  function splitRouteCoordinates(route) {
-    const segments = [];
-    const numSegments = Math.ceil(route.length /99);
-
-    for (let i = 0; i < numSegments; i++) {
-        const startIdx = i * 99;
-        const endIdx = (i + 1) * 99;
-        const segment = route.slice(startIdx, endIdx);
-        segments.push(segment);
-    }
-
-    return segments;
-}
-
-  async function fetchMatchingAPI(segment) {
-      try {
-          const coordinates = segment.map(coord => `${coord[0]},${coord[1]}`).join(';');
-          const response = await fetch(
-              `https://api.mapbox.com/matching/v5/mapbox/driving-traffic/${coordinates}?geometries=geojson&access_token=${mapboxgl.accessToken}`
-          );
-
-          if (!response.ok) {
-              throw new Error(`Error fetching Map Matching API: ${response.statusText}`);
-          }
-
-          const data = await response.json();
-          return data;
-      } catch (error) {
-          console.error(`Error fetching Map Matching API:`, error);
-          return null;
+  const fetchWalkingLines = async (startCoordinates, endCoordinates) => {  // to get walking lines
+    try {
+      const response = await fetch(
+        `https://api.mapbox.com/directions/v5/mapbox/walking/${startCoordinates.lng},${startCoordinates.lat};${endCoordinates.lng},${endCoordinates.lat}?geometries=geojson&access_token=${mapboxgl.accessToken}`
+      );
+      if (!response.ok) {
+        throw new Error(`Error fetching walking lines: ${response.statusText}`);
       }
-  }
+      const data = await response.json();
 
+      if (data && data.code === "Ok" && data.routes && data.routes.length > 0) {
+        const walkingLines = data.routes.map((route) => {
+          return route.geometry.coordinates;
+        });
+
+        const distances = data.routes.map((route) => {
+          return {
+            duration: route.duration / 60, // Convert seconds to minutes
+            distance: route.distance,
+          };
+        });
+
+        return { walkingLines, distances };
+      } else {
+        console.error(
+          "No routes found in the Walking Lines API response:",
+          data
+        );
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching walking lines:", error);
+      return null;
+    }
+  };
+
+  async function drawWalkingLines(startCoordinates, endCoordinates, marker) { // walking lines from pin to closest points on routes
+    try {
+      const { walkingLines, distances } = await fetchWalkingLines(startCoordinates,endCoordinates);
+        
+      walkingLines.forEach((line, index) => {
+        const sourceId = `${marker}-walking-line-source-${index}-${Math.random()}`;
+        const layerId = `${marker}-walking-line-layer-${index}-${Math.random()}`;
+
+        walkingLineIds.push({ sourceId, layerId });
+
+        map.addSource(sourceId, {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            properties: {
+              duration: distances[index].duration,
+              distance: distances[index].distance,
+            },
+            geometry: {
+              type: "LineString",
+              coordinates: line,
+            },
+          },
+        });
+
+        map.addLayer({
+          id: layerId,
+          type: "line",
+          source: sourceId,
+          layout: {
+            "line-join": "round",
+            "line-cap": "round",
+          },
+          paint: {
+            "line-color": marker === "start"? "#469904": marker === "end"? "#FF0000": "#0000FF",
+            "line-width": 5,
+            "line-dasharray": [1, 2],
+          },
+        });
+
+        console.log(`Duration for Walking ${index + 1}: ${distances[index].duration} minutes`);
+        console.log(`Distance for route ${index + 1}: ${distances[index].distance} meters`);
+    
+      });
+    } catch (error) {
+      console.error("Error drawing walking lines:", error);
+    }
+  }
+    
   function findOptimalOriginAndDestinationPoints(route, originClosestPoint, destinationClosestPoint, overlappingPoints) {
     console.log("STOP POINT AND POINT", originClosestPoint,destinationClosestPoint)
     const originDontOverlap = !checkOverlappingPoints(originClosestPoint, overlappingPoints);
@@ -773,6 +681,78 @@ document.addEventListener("DOMContentLoaded", function () {
           return { indexOrigin: alternativeOrigin, indexDestination: alternativeDestination };
       }
     }
+  }
+
+  function displayResults(routeInfo, subsetCoordinates, overallDistance, overallDuration, data) {
+    const overalDistanceRounded = Math.round(overallDistance / 1000);
+    const calculateFare = new FareCalculator(13, 4, 1, data);
+    const calculateDiscountedFare = new FareCalculator(11, 4, 1);
+    const fare = calculateFare .calculateJeepFare(overallDistance / 1000);
+    const discountedFare = calculateDiscountedFare .calculateJeepFare(overallDistance / 1000);
+  
+    const resultContainer = document.getElementById("resultsContainer");
+  
+    const resultElement = document.createElement("div");
+    resultElement.classList.add("result");
+  
+    const pinElement = document.createElement("img");
+    pinElement.src = routeInfo ? routeInfo.pin : "";
+  
+    const routeInfoElement = document.createElement("x");
+    routeInfoElement.textContent = `${routeInfo ? routeInfo.name : 'Unknown'}`;
+  
+    const distanceInfoElement = document.createElement("r");
+    distanceInfoElement.textContent = `Distance:${overalDistanceRounded}km`;
+  
+    const durationInfoElement = document.createElement("z");
+    durationInfoElement.textContent = `| Duration: ${Math.round(Number(overallDuration) / 60)}min`;
+  
+    const fareInfoElement = document.createElement("f");
+    fareInfoElement.textContent = `Fare: PHP ${fare.toFixed(2)}`;
+
+    const fareInfoElement2 = document.createElement("f");
+    fareInfoElement2.textContent = `Discounted Fare: PHP ${discountedFare.toFixed(2)}`;
+  
+    resultElement.appendChild(pinElement);
+    resultElement.appendChild(routeInfoElement);
+    resultElement.appendChild(distanceInfoElement);
+    resultElement.appendChild(durationInfoElement);
+    resultElement.appendChild(fareInfoElement);
+    resultElement.appendChild(fareInfoElement2);
+    resultContainer.appendChild(resultElement);
+  }
+
+  function splitRouteCoordinates(route) {
+    const segments = [];
+    const numSegments = Math.ceil(route.length /99);
+
+    for (let i = 0; i < numSegments; i++) {
+        const startIdx = i * 99;
+        const endIdx = (i + 1) * 99;
+        const segment = route.slice(startIdx, endIdx);
+        segments.push(segment);
+    }
+
+    return segments;
+  }
+
+  async function fetchMatchingAPI(segment) {
+      try {
+          const coordinates = segment.map(coord => `${coord[0]},${coord[1]}`).join(';');
+          const response = await fetch(
+              `https://api.mapbox.com/matching/v5/mapbox/driving-traffic/${coordinates}?geometries=geojson&access_token=${mapboxgl.accessToken}`
+          );
+
+          if (!response.ok) {
+              throw new Error(`Error fetching Map Matching API: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          return data;
+      } catch (error) {
+          console.error(`Error fetching Map Matching API:`, error);
+          return null;
+      }
   }
 
   function findPointIndex(route, point) {
@@ -876,11 +856,17 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-
   const routeAgainButtons = document.querySelectorAll('.route-again-btn');
     routeAgainButtons.forEach(button => {
+      document.getElementById("setStart").style.display = "none";
+          document.getElementById("setEnd").style.display = "none";
+          document.getElementById("final").style.display = "none";
+          document.getElementById("refresh").style.display = "none";
+          document.getElementById("popAddress-start").style.display = "none";
+          document.getElementById("popAddress-end").style.display = "none";
       
         button.addEventListener('click', function () {
+          
             const startLat = this.dataset.startLat;
             const startLng = this.dataset.startLng;
             const endLat = this.dataset.endLat;
@@ -921,12 +907,39 @@ document.addEventListener("DOMContentLoaded", function () {
         const marker3 = createMarker(enduserPin);
         markers.push(marker2);
         markers.push(marker3);
-
     }
     function combineCoordinates(lat, lng) {
         return [parseFloat(lng), parseFloat(lat)]; // Combine latitude and longitude
     }
-
-  
-
 });
+
+class FindClosestPoints{
+
+}
+class JeepLines{
+
+}
+class OverlappingPoints {
+  
+}
+class WalkingLines{
+  
+}
+
+class FareCalculator {
+  constructor(baseFare, initialDistance, perKm) {
+    this.baseFare = baseFare;
+    this.initialDistance = initialDistance;
+    this.perKm = perKm;
+  }
+
+  calculateJeepFare(distanceInKm) {
+    const calculatedFare = this.baseFare + (distanceInKm - this.initialDistance) * this.perKm;
+    
+    if (calculatedFare < this.baseFare) {
+      return this.baseFare;
+    } else {
+      return Math.round(calculatedFare * 4.0) / 4.0; // Round to the nearest 0.25 PHP
+    }
+  }
+}

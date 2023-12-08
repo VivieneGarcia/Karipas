@@ -1,17 +1,160 @@
+class MapInitializer {
+  constructor() {
+    mapboxgl.accessToken = "pk.eyJ1IjoiY3p5bm9uam9obiIsImEiOiJjbG9xZWVzcnIwaDBpMmttenpza2I1ajZqIn0.SXmiSmtjjBMSmMA_rmVwiw";
+    this.mapBounds = new mapboxgl.LngLatBounds([
+      [120.821471, 13.583923], // Southwest corner
+      [121.217243, 13.905142] // Northeast corner
+    ]);
+  }
+
+  initializeMap() {
+    this.map = new mapboxgl.Map({
+      container: "map",
+      style: "mapbox://styles/mapbox/streets-v12",
+      center: [121.05235981732966, 13.773815015863619],
+      zoom: 13,
+      maxBounds: this.mapBounds,
+    });
+
+    const geocoder = new MapboxGeocoder({
+      accessToken: mapboxgl.accessToken,
+      mapboxgl: mapboxgl,
+    });
+
+    this.map.addControl(geocoder, 'top-left');
+    this.map.addControl(new mapboxgl.NavigationControl(), "bottom-right");
+  }
+
+  displayRoutes(polylineInfo) {
+    polylineInfo.forEach((info) => {
+      fetch(info.url)
+        .then((response) => response.json())
+        .then((data) => {
+          const polylineData = {
+            id: `custom-polyline-${polylines.length + 1}`,
+            data: data,
+          };
+          this.map.addSource(polylineData.id, {
+            type: "geojson",
+            data: polylineData.data,
+          });
+
+          this.map.addLayer({
+            id: polylineData.id,
+            type: "line",
+            source: polylineData.id,
+            layout: {
+              "line-join": "round",
+              "line-cap": "round",
+            },
+            paint: {
+              "line-color": info.color,
+              "line-width": info.width,
+              "line-opacity": 0.18,
+            },
+          });
+
+          polylines.push(polylineData);
+        })
+        .catch((error) =>
+          console.error(`Error loading polyline: ${info.url}`, error)
+        );
+    });
+  }
+}
+
+
 document.addEventListener("DOMContentLoaded", function () {
-  class MapApplication {
-    constructor() {
-      this.map = null;
-      this.markers = [];
-      this.commonRouteIds = [];
+  const mapInitializer = new MapInitializer();
+  mapInitializer.initializeMap();
+
+  const routeManager = new RouteManager();
+  const markerManager = new MarkerManager(mapInitializer.map);
+
+  document.getElementById("setStart").addEventListener("click", function () {
+    markerManager.setMode("start");
+    markerManager.displayPopup("Origin");
+  });
+
+  document.getElementById("setEnd").addEventListener("click", function () {
+    markerManager.setMode("end");
+    markerManager.displayPopup("Destination");
+  });
+
+  document.getElementById("final").addEventListener("click", async function () {
+    try {
+      const resultContainer = document.getElementById("resultsContainer");
+      resultContainer.innerHTML = "";
+
+      markerManager.clearMarkers();
+      routeManager.clearRoutes();
+
+      if (!markerManager.hasBothMarkers()) {
+        alert("Pin both origin and destination before finalizing.");
+        return;
+      }
+
+      const startUserPin = await markerManager.getGeocodedPin("start", markerManager.getGeocodes()[0]);
+      const endUserPin = await markerManager.getGeocodedPin("end", markerManager.getGeocodes()[1]);
+
+      console.log("GEOCODED USER PIN:", startUserPin, endUserPin);
+
+      routeManager.compareAndDrawRoutes(startUserPin, endUserPin);
+
+      const [startGeocode, endGeocode] = markerManager.getGeocodes();
+
+      const loggedInUser = "<?php echo $loggedInUser; ?>";
+      if (loggedInUser) {
+        document.getElementById("saveGeocodesButton").style.display = "inline-block";
+        document.getElementById("saveGeocodeForm").submit();
+      }
+    } catch (error) {
+      console.error("Error during final click:", error);
     }
-  
-    async initializeMap() {
-      // Implement map initialization, if needed
-      // this.map = ...;
-    }
-  
-    async compareAndDrawtheLines(origin, destination) {
+  });
+});
+
+
+class MapInitializer {
+  constructor() {
+    mapboxgl.accessToken = "pk.eyJ1IjoiY3p5bm9uam9obiIsImEiOiJjbG9xZWVzcnIwaDBpMmttenpza2I1ajZqIn0.SXmiSmtjjBMSmMA_rmVwiw";
+    this.mapBounds = new mapboxgl.LngLatBounds([
+      [120.821471, 13.583923], // Southwest corner
+      [121.217243, 13.905142] // Northeast corner
+    ]);
+  }
+
+  initializeMap() {
+    this.map = new mapboxgl.Map({
+      container: "map",
+      style: "mapbox://styles/mapbox/streets-v12",
+      center: [121.05235981732966, 13.773815015863619],
+      zoom: 13,
+      maxBounds: this.mapBounds,
+    });
+
+    const geocoder = new MapboxGeocoder({
+      accessToken: mapboxgl.accessToken,
+      mapboxgl: mapboxgl,
+    });
+
+    this.map.addControl(geocoder, 'top-left');
+    this.map.addControl(new mapboxgl.NavigationControl(), "bottom-right");
+  }
+}
+
+class RouteManager {
+  constructor() {
+    this.polylineInfo = [
+      { url: "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/alangilan.json", color: "#ff0000", width: 9, name: "Alangilan", pin: "http://localhost/Karipas/Karipas%20Cult/images/alangilanpin.png" },
+      { url: "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/balagtas.json", color: "#00ff00", width: 4, name: "Balagtas", pin: "http://localhost/Karipas/Karipas%20Cult/images/balagtas.pin.png" },
+      { url: "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/bauanbat.json", color: "#113c82", width: 5, name: "Bauan", pin: "http://localhost/Karipas/Karipas%20Cult/images/bauanpin.png" },
+      { url: "http://localhost/Karipas/Karipas%20Cult/RoutesPoly/libjo.json", color: "#5a2476", width: 5, name: "Libjo", pin: "http://localhost/Karipas/Karipas%20Cult/images/libjopin.png" },
+    ];
+    this.polylines = [];
+  }
+
+  async compareAndDrawRoutes(origin, destination) {
       try {
         const originClosestPoints = await findClosestPointOnRoutes(origin, numberOfClosestRoutes );
         const destinationClosestPoints = await findClosestPointOnRoutes(destination,numberOfClosestRoutes);
@@ -96,386 +239,103 @@ document.addEventListener("DOMContentLoaded", function () {
       } catch (error) {
         console.error("Error during final click:", error);
       }
-    }
-  
-    async drawJeepCommonRoute(route, originClosestPoint, destinationClosestPoint) {
-      try {
+    
+  }
 
-        document.getElementById("resultsContainer").style.display = "block";
+  clearRoutes() {
+    // Your existing code for clearEveryLayer function goes here
+    // ...
+  }
+}
 
-        const response = await fetch(route);
-        const data = await response.json();
-        const routeInfo = polylineInfo.find(info => info.url === route);
+class MarkerManager {
+  constructor(map) {
+    this.map = map;
+    this.startMarker = null;
+    this.endMarker = null;
+    this.settingStart = false;
+    this.settingEnd = false;
+  }
 
+  setMode(mode) {
+    this.settingStart = mode === "start";
+    this.settingEnd = mode === "end";
+  }
 
-        if (!data || !data.features || data.features.length === 0) {
-            console.error(`Invalid polyline data for ${route}:`, data);
-            return;
-        }
+  displayPopup(type) {
+    const popupElement = document.getElementById("popupstart");
+    popupElement.style.display = "block";
+    popupElement.textContent = `Pin on the map to set ${type}`;
+    document.getElementById("successMessage").style.display = "none";
+  }
 
-        const firstFeature = data.features[0];
-
-        if (!firstFeature.geometry || !firstFeature.geometry.coordinates) {
-            console.error(`Invalid geometry in polyline data for ${route}:`, firstFeature.geometry);
-            return;
-        }
-
-        const polylineCoordinates = firstFeature.geometry.coordinates;
-        const overlappingPoints = getOverlappingPointsOfCompressedCircle(polylineCoordinates);
-
-        const { indexOrigin, indexDestination } = findOptimalOriginAndDestinationPoints(polylineCoordinates, originClosestPoint, destinationClosestPoint, overlappingPoints);
-
-        if (indexOrigin === null || indexDestination === null) {
-            console.error(`Error finding closest points on ${route} for origin or destination.`);
-            return;
-        }
-
-        const subsetCoordinates = calculateSubsetCoordinates(polylineCoordinates, indexOrigin, indexDestination);
-
-        const segments = splitRouteCoordinates(subsetCoordinates);
-        let overallDistance = 0;
-        let overallDuration = 0;
-
-        for (const segment of segments) {
-            const response = await fetchMatchingAPI(segment);
-
-            if (!response || !response.matchings ||response.matchings.length === 0) {
-                console.error(`Invalid matching data for segment:`, data);
-                continue;
-            }
-
-            const matching = response.matchings[0];
-            const distanceOfSegment = matching.distance;
-            const durationOfSegment = matching.duration;
-            const coordinates = matching.geometry.coordinates;
-
-            overallDistance += distanceOfSegment;
-            overallDuration += durationOfSegment; 
-
-            if (coordinates.length > 0) {
-
-              const sourceId2 = "used-route-source-" + Date.now();
-              const layerId2 = "used-route-layer-" + Date.now();
-  
-              commonRouteIds.push({ sourceId: sourceId2, layerId: layerId2 });
-  
-              map.addSource(sourceId2, {
-                  type: "geojson",
-                  data: {
-                      type: "Feature",
-                      properties: {},
-                      geometry: {
-                          type: "LineString",
-                          coordinates: subsetCoordinates,
-                      },
-                  },
-              });
-  
-              const routeInfo = polylineInfo.find(info => info.url === route);
-              const routeColor = routeInfo.color;
-              const routeWidth = routeInfo.width;
-  
-              map.addLayer({
-                  id: layerId2,
-                  type: "line",
-                  source: sourceId2,
-                  layout: {
-                      "line-join": "round",
-                      "line-cap": "round",
-                  },
-                  paint: {
-                      "line-color": routeColor,
-                      "line-width":  routeWidth,
-                      "line-opacity": 0.8,
-                  },
-              });
-          } else {
-              console.error(`Subset coordinates are empty for ${route}. Skipping drawing for this pair.`);
-          }
-        }
-        document.getElementById('jeepsAvailable').style.display = "block";
-        document.getElementById('reminder').style.display = "block";
-        displayResults(routeInfo, subsetCoordinates, overallDistance, overallDuration)
+  async getGeocodedPin(type, pinCoordinates) {
+    try {
+      const geocodingUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${pinCoordinates.join(",")}.json?access_token=${mapboxgl.accessToken}`;
+      const response = await fetch(geocodingUrl);
+      const data = await response.json();
+      return data.features ? data.features[0] : null;
     } catch (error) {
-        console.error(`Error drawing line connecting closest points for common route ${route}:`, error);
+      console.error("Error fetching geocode result:", error);
+      return null;
     }
-    } 
-  
-    displayResults(routeInfo, subsetCoordinates, overallDistance, overallDuration) {
-      const overalDistanceRounded = Math.round(overallDistance / 1000);
-      const fare = calculateJeepFare(overallDistance / 1000);
-    
-      const resultContainer = document.getElementById("resultsContainer");
-    
-      const resultElement = document.createElement("div");
-      resultElement.classList.add("result");
-    
-      const pinElement = document.createElement("img");
-      pinElement.src = routeInfo ? routeInfo.pin : "";
-    
-      const routeInfoElement = document.createElement("x");
-      routeInfoElement.textContent = `${routeInfo ? routeInfo.name : 'Unknown'}`;
-    
-      const distanceInfoElement = document.createElement("r");
-      distanceInfoElement.textContent = `Distance:${overalDistanceRounded}km`;
-    
-      const durationInfoElement = document.createElement("z");
-      durationInfoElement.textContent = `| Duration: ${Math.round(Number(overallDuration) / 60)}min`;
-    
-      const fareInfoElement = document.createElement("f");
-      fareInfoElement.textContent = `Fare: PHP ${fare.toFixed(2)}`;
-    
-      resultElement.appendChild(pinElement);
-      resultElement.appendChild(routeInfoElement);
-      resultElement.appendChild(distanceInfoElement);
-      resultElement.appendChild(durationInfoElement);
-      resultElement.appendChild(fareInfoElement);
-      resultContainer.appendChild(resultElement);
+  }
+
+  hasBothMarkers() {
+    return this.startMarker && this.endMarker;
+  }
+
+  getGeocodes() {
+    const startGeocode = this.startMarker.getLngLat();
+    const endGeocode = this.endMarker.getLngLat();
+    return [startGeocode, endGeocode];
+  }
+
+  clearMarkers() {
+    if (this.startMarker) {
+      this.startMarker.remove();
+      this.startMarker = null;
     }
-  
-    calculateJeepFare(distanceInKm) {
-      const baseFare = 13; // Initial fare
-      const initialDistance = 4; // Initial distance for base fare
-      const perKm = 1     ; // Fare per kilometer
 
-      const calculatedFare = baseFare + (distanceInKm - initialDistance) * perKm;
-      if(calculatedFare < baseFare){
-        return baseFare;
-      } else{
-        return Math.round(calculatedFare * 4.0) / 4.0; // Round to the nearest 0.25 PHP
-      }
+    if (this.endMarker) {
+      this.endMarker.remove();
+      this.endMarker = null;
     }
-  
-    splitRouteCoordinates(route) {
-      const segments = [];
-      const numSegments = Math.ceil(route.length /99);
+  }
 
-      for (let i = 0; i < numSegments; i++) {
-          const startIdx = i * 99;
-          const endIdx = (i + 1) * 99;
-          const segment = route.slice(startIdx, endIdx);
-          segments.push(segment);
-      }
+  handleMarkerSetting(e, type) {
+    const marker = type === "start" ? this.startMarker : this.endMarker;
+    const markerImage =
+      type === "start"
+        ? "http://localhost/Karipas/Karipas%20Cult/images/mapbox-marker-icon-20px-green.png"
+        : "http://localhost/Karipas/Karipas%20Cult/images/mapbox-marker-icon-20px-red.png";
 
-      return segments;
+    if (marker) {
+      marker.remove();
     }
-  
-    async fetchMatchingAPI(segment) {
-      try {
-        const coordinates = segment.map(coord => `${coord[0]},${coord[1]}`).join(';');
-        const response = await fetch(
-            `https://api.mapbox.com/matching/v5/mapbox/driving-traffic/${coordinates}?geometries=geojson&access_token=${mapboxgl.accessToken}`
-        );
 
-        if (!response.ok) {
-            throw new Error(`Error fetching Map Matching API: ${response.statusText}`);
-        }
+    const lngLat = e.lngLat;
 
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error(`Error fetching Map Matching API:`, error);
-        return null;
-    }
-    }
-  
-    findOptimalOriginAndDestinationPoints(route, originClosestPoint, destinationClosestPoint, overlappingPoints) {
-      console.log("STOP POINT AND POINT", originClosestPoint,destinationClosestPoint)
-      const originDontOverlap = !checkOverlappingPoints(originClosestPoint, overlappingPoints);
-      const destinationDontOverlap = !checkOverlappingPoints(destinationClosestPoint, overlappingPoints);
-      
-      const originIndex = findPointIndex(route, originClosestPoint);
-      const destinationIndex = findPointIndex(route, destinationClosestPoint);
-      const alternativeDestination = findAlternativeIndex(destinationClosestPoint, overlappingPoints, route);
-      const alternativeOrigin = findAlternativeIndex(originClosestPoint, overlappingPoints, route);
-      
-      if (originDontOverlap && destinationDontOverlap) {
-          console.log("They don't overlap.");
-          return { indexOrigin: originIndex, indexDestination: destinationIndex };
+    const newMarker = new mapboxgl.Marker({
+      element: this.createCustomMarker(markerImage),
+    })
+      .setLngLat(lngLat)
+      .addTo(this.map);
 
-      } else if (originDontOverlap && !destinationDontOverlap) {
-          console.log("Destination overlaps, finding alternative...");
-          
-          const findClosesRouteA = calculateSubsetCoordinates(route, originIndex,  destinationIndex)
-          const findClosestRouteB = calculateSubsetCoordinates(route, originIndex, alternativeDestination)
-
-          if (findClosesRouteA.length > findClosestRouteB.length){
-            return {indexOrigin: originIndex, indexDestination: alternativeDestination}
-          } else {
-            return {indexOrigin: originIndex, indexDestination:  destinationIndex}
-          }
-
-      } else if (!originDontOverlap && destinationDontOverlap) {
-        console.log("Origin overlaps, finding alternative...");
-        
-        const findClosesRouteA = calculateSubsetCoordinates(route, originIndex,  destinationIndex)
-        const findClosestRouteB = calculateSubsetCoordinates(route, alternativeOrigin, destinationIndex)
-
-          if (findClosesRouteA.length > findClosestRouteB.length){
-            return { indexOrigin:  alternativeOrigin , indexDestination: destinationIndex};
-          } else {
-            return {indexOrigin: originIndex, indexDestination:  destinationIndex}
-          }
-
+    if (type === "start") {
+      this.startMarker = newMarker;
     } else {
-        console.log("Both origin and destination overlap with points on the route.");
-    
-        const findClosestRouteA = calculateSubsetCoordinates(route, originIndex, destinationIndex);
-        const findClosestRouteB = calculateSubsetCoordinates(route, alternativeOrigin, destinationIndex);
-        const findClosestRouteC = calculateSubsetCoordinates(route, originIndex, alternativeDestination);
-        const findClosestRouteD = calculateSubsetCoordinates(route, alternativeOrigin, alternativeDestination);
-    
-        const lengths = {
-            routeA: findClosestRouteA.length,
-            routeB: findClosestRouteB.length,
-            routeC: findClosestRouteC.length,
-            routeD: findClosestRouteD.length
-        };
-    
-        const shortestRouteLength = Math.min(...Object.values(lengths));
-        const shortestRoute = Object.keys(lengths).find(key => lengths[key] === shortestRouteLength);
-    
-        if (shortestRoute === 'routeA') {
-            return { indexOrigin: originIndex, indexDestination: destinationIndex };
-        } else if (shortestRoute === 'routeB') {
-            return { indexOrigin: alternativeOrigin, indexDestination: destinationIndex };
-        } else if (shortestRoute === 'routeC') {
-            return { indexOrigin: originIndex, indexDestination: alternativeDestination };
-        } else {
-            return { indexOrigin: alternativeOrigin, indexDestination: alternativeDestination };
-        }
-      }
+      this.endMarker = newMarker;
     }
-  
-    findPointIndex(route, point) {
-      for (let i = 0; i < route.length; i++) {
-        const routePoint = route[i];
-        if (routePoint[0] === point.lng || routePoint[1] === point.lat) {
-            return i; 
-        }
-      }
-        return -1;
-    }
-    
-    checkOverlappingPoints(point, overlappingPoints) {
-      console.log("Point:", point);
-      for (const overlappingPointObj of overlappingPoints) {
-          const overlappingPoint = overlappingPointObj.coordinate;
-          if (point.lng === overlappingPoint[0] && point.lat === overlappingPoint[1]) {
-              return true; // It overlaps
-          }
-      }
-      return false; // It doesn't
-    }
-  
-    findAlternativeIndex(point, overlappingPoints, route) {
-      for (const overlappingPointObj of overlappingPoints) {
-        const overlappingPoint = overlappingPointObj.coordinate;
-        if (point.lng === overlappingPoint[0] && point.lat === overlappingPoint[1]) {
-            console.log("Matching point found.");
-            console.log("similarCoordinateIndex:", overlappingPointObj.similarCoordinateIndex);
-            return overlappingPointObj.similarCoordinateIndex;
-        }
-    }
-    console.log("No matching point found.");
-    return -1;
-    }
-  
-    getOverlappingPointsOfCompressedCircle(route) {
-      const overlappingPoints = [];
-  
-      for (let i = 0; i < route.length; i++) {
-        const currentCoordinate = route[i];
-        for (let j = i + 1; j < route.length; j++) {
-          const otherCoordinate = route[j];
-    
-          if (currentCoordinate[0] === otherCoordinate[0] && currentCoordinate[1] === otherCoordinate[1]) {
-            overlappingPoints.push({
-              coordinate: currentCoordinate,
-              index: i,
-              similarCoordinateIndex: j,
-            });
-          }
-        }
-      }
-      return overlappingPoints;
-    }
-  
-    calculateSubsetCoordinates(polylineCoordinates, indexOrigin, indexDestination) {
-      const subsetCoordinates = [];
-      const maxSubsetLength = Infinity;
 
-      // Validate indices
-      if (indexOrigin < 0 || indexDestination < 0 || indexOrigin >= polylineCoordinates.length || indexDestination >= polylineCoordinates.length) {
-          console.error("Error: Invalid indices");
-          return subsetCoordinates;
-      }
-
-      if (indexDestination >= indexOrigin) {
-          subsetCoordinates.push(...polylineCoordinates.slice(indexOrigin, indexDestination + 1));
-      } else {
-          subsetCoordinates.push(...polylineCoordinates.slice(indexOrigin), ...polylineCoordinates.slice(0, indexDestination + 1));
-      }
-
-      // Check if the subset is too long and there is more than one route
-      if (subsetCoordinates.length > maxSubsetLength && polylineCoordinates.length > 2) {
-          console.error("Error: Subset is too long");
-          return [];
-      }
-
-      return subsetCoordinates;
-    }
-  
-    findExactCommonRoutes(route1, route2) {
-      const arrayify = (value) => (Array.isArray(value) ? value : [value]);
-
-      const set1 = new Set(arrayify(route1));
-      const set2 = new Set(arrayify(route2));
-
-      const uniqueCommonRoutes = new Set([...set1].filter(route => set2.has(route)));
-
-      return [...uniqueCommonRoutes];
-    } 
-  
-    async getStopPoints() {
-      try {
-        const response = await fetch("http://localhost/Karipas/Karipas%20Cult/RoutesPoly/StopPoints.json");
-        const data = await response.json();
-        return data.features.map(feature => feature.geometry.coordinates);
-      } catch (error) {
-        console.error("Error during getStopPoints:", error);
-        return [];
-      }
-    }
+    this.showAddress(lngLat, type);
   }
-  
-  // Subclass to handle button interactions
-  class ButtonHandler extends MapApplication {
-    constructor() {
-      super();
-      // Additional properties specific to button handling
-      this.originInput = document.getElementById('originInput');
-      this.destinationInput = document.getElementById('destinationInput');
-      this.compareButton = document.getElementById('compareButton');
-      this.messagesContainer = document.getElementById('messages');
-    }
-  
-    attachEventListeners() {
-      this.compareButton.addEventListener('click', () => this.handleCompareButtonClick());
-    }
-  
-    async handleCompareButtonClick() {
-      const origin = this.originInput.value;
-      const destination = this.destinationInput.value;
-  
-      // Validate inputs
-  
-      // Call the method from the parent class
-      await this.compareAndDrawtheLines(origin, destination);
-    }
+
+  createCustomMarker(markerImage) {
+    const markerElement = document.createElement("img");
+    markerElement.src = markerImage;
+    markerElement.style.width = "26px";
+    markerElement.style.height = "62.4px";
+    return markerElement;
   }
-  
-  const buttonHandler = new ButtonHandler();
-  buttonHandler.attachEventListeners();
-  
-});
+}

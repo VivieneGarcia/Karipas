@@ -277,9 +277,10 @@ z { /*distance*/
 	margin-right:15px;
   color: rgb(224, 238, 239);
 }
-f{
 
+f{
   color: rgb(108, 219, 227);
+	margin-right: 20px;
 }
 
 #span{
@@ -295,9 +296,10 @@ img{
   display: flex;
   flex-direction: column;
   margin-left: 19px;
-	max-width: 40vh;
-	width: 450px;
+	max-width: 43vh;
+	width: 460px;
 	overflow-x: auto;
+	scrollbar-width:inherit;
 	
 }
 
@@ -307,23 +309,63 @@ img{
 }
 
 
-c {
+c { /*origin*/
   font-size: 14px;
   font-weight: 100;
   margin: 0;
   display: flex; /* Enable flexbox layout */
   justify-content: flex-start; /* Align content to the left */
   text-align: left;
-	margin-top: 5px;;
-	
+	margin-top: 10px;;
 }
-
-.route-again-btn{
-	font-size: 14px;
+d { /*destination*/
+  font-size: 14px;
   font-weight: 100;
   margin: 0;
   display: flex; /* Enable flexbox layout */
   justify-content: flex-start; /* Align content to the left */
   text-align: left;
-	margin-bottom: 35px;;
+	margin-top: 0px;;
+}
+
+l {
+	text-align: left;
+}
+
+.route-again-btn {
+  font-size: 14px;
+  font-weight: 100;
+  margin: 0;
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  text-align: center; 
+	margin-bottom: 8px;
+	margin-top:0;
+}
+
+.back-button{
+  background-color: #AAABB8;
+  border-radius: 4px;
+  padding: 6px 60px;
+	background:  #16516e;
+	color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+.back-button:hover {
+  opacity: 0.65;
+}
+.route-again-btn {
+  background-color:  #AAABB8;
+  border-radius: 4px;
+  padding: 6px 20px;
+	background:   #175f84;
+	color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.route-again-btn:hover {
+  opacity: 0.65;
 }

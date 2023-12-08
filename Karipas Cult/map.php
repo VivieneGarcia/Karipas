@@ -80,6 +80,7 @@ if (isset($_POST['logout'])) {
                     echo "<p>YOU ARE NOT LOGGED IN.</p>";
                 }
                 ?>
+            
              <button id="setStart">Pin Origin</button>
             <button id="setEnd">Pin Destination</button>
             <button id="final">Search Jeep</button>

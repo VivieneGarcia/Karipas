@@ -24,15 +24,17 @@ if (isset($_SESSION['userID'])) {
                 
                 while ($row = mysqli_fetch_assoc($result)) {
                     echo "<div class='history-entry'>";
+                    echo "<l>=======================================</l>";
+                    echo $row['id'];
                     echo "<c>Origin: " . $row['origin_address'] . "</c><br>";
-                    echo "<c>Destination: " . $row['destination_address'] . "</c><br>";
+                    echo "<d>Destination: " . $row['destination_address'] . "</d><br>";
 
                     // Button to re-route to this location
                     echo "<td><button class='route-again-btn' data-start-lat='{$row['start_latitude']}' data-start-lng='{$row['start_longitude']}' data-end-lat='{$row['end_latitude']}' data-end-lng='{$row['end_longitude']}'>Route Again</button></td>";
                     
                     echo "</div>";
                 }
-
+                echo "<l>=======================================</l>";
                 echo "</div>";
             } else {
                 echo "Error fetching geocodes history: " . mysqli_error($conn);
