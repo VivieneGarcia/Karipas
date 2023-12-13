@@ -28,13 +28,13 @@ Goal 8 - Decent Work and Economic Growth
 1. Clone or download the repository into the `htdocs` folder of your XAMPP installation.
 
     ```bash
-    git clone https://github.com/<your-username>/Karipas.git
+    git clone https://github.com/VivieneGarcia/Karipas.git
     ```
 
 2. Start XAMPP and ensure that Apache and MySQL are running.
 
 3. Configure the database connection:
-   - Open `db_connect.php` and  ` index.php` located in the `Karipas Cult` folder.
+   - Open `variables.php` located in the `Karipas Cult` folder.
    - Update the database connection details if necessary.
    ```
    $servername = "YOUR_SERVER_NAME";
