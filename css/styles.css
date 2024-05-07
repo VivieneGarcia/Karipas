@@ -1,0 +1,77 @@
+
+
+@keyframes mapAnim {
+	0% {
+		opacity: 0;
+	}
+
+	100% {
+		opacity: 1;
+	} 
+}
+
+body {
+  font-family: "Trebuchet MS", Helvetica, sans-serif;
+  background-color: #E2CE5E;
+  text-align: center;
+	font-size: 14px;
+	font-weight: 300;
+  color:#000000;
+  animation: mapAnim 0.5s ease 0s 1 normal forwards;
+}
+
+#map {
+  height: 96%;
+  width: 100%;
+  border: 3px solid #232328; /* Black border */
+  cursor: pointer;
+  display: flex;
+  border-radius: 10px; /* Add rounded corners */
+}
+
+.layout {
+  display: grid;
+  grid: "sidebar body" 1fr / auto 2fr;
+  gap: 13px;
+	margin: 7px;
+}
+
+.sidebar {
+  grid-area: sidebar;
+  display: flex;
+  flex-direction: column;
+	max-width: 45vh;
+  height: 90vh;
+	display:flex;
+	overflow-x: auto;
+	scrollbar-width:inherit;
+}
+
+button {
+	border: 3px solid #232328;
+  padding: 6px 20px;
+  border-radius: 4px;
+  background: #09466e;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 2px;
+	color:rgb(224, 238, 239);
+	font-family: 'VastagoGrotesk-Black';
+	font-size: 20px;
+	width: 100%;
+}
+button:hover{
+	opacity: 0.65;
+}
+
+.box-container {
+  display: flex;
+}
+
+.body { 
+	grid-area: body;
+	margin-right: 5px; 
+}
+
+
+

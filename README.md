@@ -28,24 +28,15 @@ Goal 8 - Decent Work and Economic Growth
 1. Clone or download the repository into the `htdocs` folder of your XAMPP installation.
 
     ```bash
-    git clone https://github.com/VivieneGarcia/Karipas.git
+    git clone https://github.com/mafranzramos/Karipas.git
     ```
 
 2. Start XAMPP and ensure that Apache and MySQL are running.
 
-3. Configure the database connection:
-   - Open `variables.php` located in the `Karipas Cult` folder.
-   - Update the database connection details if necessary.
-   ```
-   $servername = "YOUR_SERVER_NAME";
-   $username = "YOUR_USERNAME";
-   $password = "YOUR_PASSWORD";
-   ```
+3. Rename `defaultvariables.php` to `variables.php` and set the required variables in the given file.
     
-4. Open your browser and navigate to
-   ```
-   http://localhost/Karipas/Karipas%20Cult/index.php
-   ```
+4. Open your browser and navigate to [`http://localhost/Karipas/start.php`](http://localhost/Karipas/start/php)
+
 
 ## 🔧 Built With
 
@@ -69,4 +60,3 @@ Goal 8 - Decent Work and Economic Growth
 <p align="center"><img src="https://github.com/VivieneGarcia/Karipas/blob/main/README_Elements/KaripasTextLogo.png" width="320px" height="200px" alt="Jeep Logo"></p>
 
 ---
-

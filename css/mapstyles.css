@@ -1,0 +1,342 @@
+@font-face {
+    font-family: 'VastagoGrotesk';
+    src: url(fonts/VastagoGrotesk-Light.otf);
+  }
+
+@font-face {
+    font-family: 'VastagoGrotesk-Bold';
+    src: url(fonts/VastagoGrotesk-Bold.otf);
+  }
+
+@font-face {
+    font-family: 'VastagoGrotesk-Black';
+    src: url(fonts/VastagoGrotesk-Black.otf);
+  }
+
+@font-face {
+    font-family: 'VastagoGrotesk-Medium';
+    src: url(fonts/VastagoGrotesk-Medium.otf);
+  }
+
+@keyframes mapAnim {
+	0% {
+		opacity: 0;
+	}
+
+	100% {
+		opacity: 1;
+	} 
+}
+
+body {
+  font-family: 'VastagoGrotesk-Medium';
+  background-color: #E2CE5E;
+  text-align: center;
+	font-size: 14px;
+	font-weight: 200;
+  color:#2D1E2F;
+  animation: mapAnim 0.5s ease 0s 1 normal forwards;
+	height: 100%;
+}
+
+.logo {
+    font-size: 150%;
+    font-family: 'VastagoGrotesk-Black';
+    text-align: center;
+    flex-basis: 15%;
+    color: #000;
+}
+
+#map {
+  height: 100%;
+  width: 100%;
+  border: 3px solid #232328; /* Black border */
+  cursor: pointer;
+  display: flex;
+  border-radius: 10px; /* Add rounded corners */
+}
+
+button{
+  width: 100%;
+}
+
+
+#setStart, #setEnd, #refresh, #final {
+	border: 3px solid #232328; /* Black border */
+  padding: 6px 20px;
+  border-radius: 4px;
+  background: #222E50;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 2px;
+	color:rgb(224, 238, 239);
+	font-family: 'VastagoGrotesk-Black';
+	font-size: 13px;
+}
+#setEnd{
+	background: #7e1e04;
+}
+#final{
+	background: #084A5E;
+}
+#refresh{
+	background: #302E2F;
+}
+#setStart {
+  padding: 6px 20px;
+  border-radius: 4px;
+  background: #066E34;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 5px;
+	color:rgb(224, 238, 239);
+}
+#setStart:hover, #setEnd:hover,#refresh:hover,#final:hover {
+  opacity: 0.65;
+}
+
+#loggedInOrNot1 {
+	display: flex;
+	color: #ffffff; /* Adjust the color as needed */
+	font-size: 14px; /* Adjust the font size as needed */
+
+}
+#loggedInOrNot1 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  grid-auto-flow: column; /* Controls button placement */
+	align-items: center;
+}
+
+#saveGeocodesButton{
+	margin-top: 5px;
+	background-color: #AAABB8;
+  border-radius: 4px;
+  padding: 6px 60px;
+	background:  #355DC3;
+	color: white;
+  cursor: pointer;
+  font-weight: bolder;
+}
+
+#logoutButton, #history {
+  border: 3px solid #232328; /* Black border */
+  padding: 6px 20px;
+  border-radius: 4px;
+  background: #222E50;
+  cursor: pointer;
+  width: 100%;
+  font-weight: bold;
+  margin-top: 2px;
+	color:rgb(224, 238, 239);
+	font-family: 'VastagoGrotesk-Black';
+	font-size: 13px;
+  text-align: center;
+  margin-bottom: 5px;
+	display: flex;
+	cursor: pointer;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: auto 2fr; /* Adjusted to use grid-template-columns */
+  gap: 13px;
+  margin: 7px;
+}
+
+.sidebar {
+  grid-column: 1; 
+  justify-content: center; 
+  max-width: 310px;
+  height: 90vh; /* important */
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.body {
+  grid-column: 2; /* Added grid-column for the body */
+}
+
+@media only screen and (max-width: 530px) {
+  .layout {
+    display: grid;
+    grid-template-rows: auto auto; /* Use two rows */
+    margin: 10px;
+  }
+
+  button{
+    max-width: 600px;
+  }
+
+  .sidebar {
+    grid-row: 1; /* Place the sidebar in the first row */
+    grid-column: 2; /* Span the first column */
+    height:fit-content;
+    max-width: 600px;
+  }
+
+  .body {
+    grid-row: 2; /* Place the body in the second row */
+    grid-column: 2; /* Span the first column */
+    height: 400px;
+  }
+  #map{
+    display:flex;
+    height: 100%;
+  }
+  
+}
+
+
+.box-container {
+	border: 2px solid #094867; /* Set the border properties */
+	padding: 10px;
+	margin: 10px 0; 
+	border-radius: 5px;
+	background-color: #084A5E;
+	display:flex;
+}
+
+x{ /*jeep*/
+  font-weight: bold;
+	font-style: italic;
+	color: whitesmoke;
+	font-size: x-large;
+}
+
+#geocoders {
+  font-family: 'VastagoGrotesk';
+  z-index: 1;
+  padding-top: 1%;
+  padding-bottom: 8%;
+  margin: auto;
+  width: 50%;
+}
+.mapboxgl-ctrl-geocoder {
+  min-width: 100%;
+}
+
+k{ 
+	font-weight: bold;
+	font-style: italic;
+  color: #000000;
+	font-size: x-large;
+	margin-top: 10px;
+}
+
+r { /*distance*/
+  color: #e1e5e9;
+	margin:10px;
+	font-size: medium;
+}
+
+z { /*distance*/
+	margin-right:15px;
+  color: rgb(224, 238, 239);
+}
+
+f{
+  color: rgb(108, 219, 227);
+	margin-right: 20px;
+}
+
+#span{
+	margin: 0;
+}
+
+img{
+	margin-right: 4px;
+}
+
+
+c { /*origin*/
+  font-size: 14px;
+  font-weight: 100;
+  margin: 0;
+  display: flex; /* Enable flexbox layout */
+  justify-content: flex-start; /* Align content to the left */
+  text-align: left;
+	margin-top: 10px;;
+}
+d { /*destination*/
+  font-size: 14px;
+  font-weight: 100;
+  margin: 0;
+  display: flex; /* Enable flexbox layout */
+  justify-content: flex-start; /* Align content to the left */
+  text-align: left;
+	margin-top: 0px;;
+}
+
+l {
+	text-align: left;
+}
+
+.route-again-btn {
+  font-size: 14px;
+  font-weight: 100;
+  margin: 0;
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  text-align: center; 
+	margin-bottom: 8px;
+	margin-top:0;
+}
+
+.back-button{
+  background-color: #AAABB8;
+  border-radius: 4px;
+  padding: 6px 60px;
+	background:  #355DC3;
+	color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+.back-button:hover {
+  opacity: 0.65;
+}
+.route-again-btn {
+  background-color:  #AAABB8;
+  border-radius: 4px;
+  padding: 6px 20px;
+	background:   #355DC3;
+	color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.route-again-btn:hover {
+  opacity: 0.65;
+}
+
+#noJeepFound{
+  font-size: 30px;
+  margin-top: 20px;
+  font-family: 'VastagoGrotesk-Black';
+  text-align: center;
+  display: flex;
+  color: #000;
+}
+
+#popAddress-start{
+	font-size: 14px;
+	color: #005e14;
+  display: flex;  
+}
+#popAddress-end{
+	font-size: 14px;
+	color: #5b0000;
+  display: flex;
+}
+
+#OriginDestinationContainer{
+	display: flex;
+  justify-items: center;
+	margin-top: 7px;
+	border: 2px solid #200101; /* Set the border properties */
+	background-color: #f5ecdd;
+	padding: 2px;
+	border-radius: 5px;
+}
